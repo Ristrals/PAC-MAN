@@ -1,0 +1,1 @@
+"""Pacman project init file."""
