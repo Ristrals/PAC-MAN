@@ -7,7 +7,7 @@
 #   By: junruan <junruan@student.42.fr>              +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/08/17 18:26:14 by junruan             #+#    #+#            #
-#   Updated: 2026/08/18 11:36:29 by junruan            ###   ########.fr      #
+#   Updated: 2026/08/18 14:50:56 by junruan            ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -45,13 +45,13 @@ def load_config(file_path: str) -> GameConfig:
                 clean_line = line.strip()
                 if not clean_line:
                     continue
-                elif clean_line.startswith("#"):
+                elif clean_line.startswith("#") or clean_line.startswith("//"):
                     continue
                 else:
                     lines.append((clean_line))
         txt = "\n".join(lines)
         data = json.loads(txt)
-        
+
         config = GameConfig(**data)
         print(config)
     except FileNotFoundError:
