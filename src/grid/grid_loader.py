@@ -1,6 +1,6 @@
 from mazegenerator import MazeGenerator
 from src.config import load_config
-from src.cell import Cell, create_cell
+from src.grid.cell import Cell, create_cell
 
 
 def maze_load(width: int, height: int, seed: int) -> list[list[Cell]]:
