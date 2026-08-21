@@ -6,6 +6,6 @@ from pydantic import BaseModel, Field
 
 
 class EntityModel(ABC, BaseModel):
-    _coord_y: Annotated[int, Field(alias="coord_y", description="Coordinate y")]
-    _coord_x: Annotated[int, Field(alias="coord_x", description="Coordinate x")]
+    _y: Annotated[int, Field(alias="y", description="Coordinate y")]
+    _x: Annotated[int, Field(alias="x", description="Coordinate x")]
     _active: bool = Field(alias="active", description="Is this entity active?")

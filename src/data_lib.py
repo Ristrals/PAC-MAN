@@ -8,3 +8,10 @@ class TextColors:
     ylw = '\033[93m'
     cyn = '\033[36m'
     clr = '\033[0m'
+
+class Movements:
+    """Movements possible for token entities"""
+    UP = "up"
+    DOWN = "down"
+    LEFT = "left"
+    RIGHT = "right"
