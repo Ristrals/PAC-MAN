@@ -90,7 +90,7 @@ class ScoreManager:
                 raise se
 
     # Score board reset option
-    def reset_score_board(self):
+    def reset_score_board(self) -> None:
         self.score_board = [{"name": "Player", "score": 0} for i in range(10)]
 
     # [Tool]: Checks if current score must be recorded.
