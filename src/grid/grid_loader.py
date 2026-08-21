@@ -1,9 +1,9 @@
 from mazegenerator import MazeGenerator
 from src.config import load_config
-from src.cell import Cell, create_cell
+from src.grid.cell import Cell, create_cell
 
 
-def maze_load(width: int, height: int, seed: int) -> list[Cell]:
+def maze_load(width: int, height: int, seed: int) -> list[list[Cell]]:
     try:
         m = MazeGenerator(size=(width, height), perfect=False)
         m.generate(seed=seed)
@@ -13,12 +13,14 @@ def maze_load(width: int, height: int, seed: int) -> list[Cell]:
     if not m.maze:
         print("Error: maze data is empty")
         return []
-    cells: list[Cell] = []
+    grid: list[list[Cell]] = []
     for y, row in enumerate(m.maze):
+        row_cells: list[Cell] = []
         for x, value in enumerate(row):
             cell = create_cell(x, y, value)
-            cells.append(cell)
-    return cells
+            row_cells.append(cell)
+        grid.append(row_cells)
+    return grid
 
 
 if __name__ == "__main__":

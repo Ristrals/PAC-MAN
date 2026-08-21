@@ -6,8 +6,6 @@ class StateType(Enum):
     EMPTY = "empty"
     SUPER_PACGUM = "super_pacgum"
     PACGUM = "pacgum"
-    PLAYER = "player"
-    GHOST = "ghost"
 
 
 @dataclass
