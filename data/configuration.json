@@ -1,6 +1,6 @@
 # comments test
 {
-    "lives": 3,
+    "lives": -3,
     "seed": 42,
     # comments test
     "pacgum": 42,
