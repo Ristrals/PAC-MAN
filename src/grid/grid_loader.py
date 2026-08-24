@@ -1,6 +1,8 @@
 from mazegenerator import MazeGenerator
 from src.config import load_config
-from src.grid.cell import Cell, create_cell
+from src.grid.cell import Cell, StateType, create_cell
+import random
+
 
 class Grid:
     def __init__(self, width: int, height: int, seed: int | None) -> None:
@@ -28,19 +30,47 @@ class Grid:
             grid.append(row_cells)
         self.grid = grid
 
-    def get_cell(self) -> Cell:
-        pass
+    def get_cell(self, x, y) -> Cell:
+        return self.grid[y][x]
+
+    def place_items(self) -> None:
+        corners = [
+            (0, 0),
+            (self.width - 1, 0),
+            (0, self.height - 1),
+            (self.width - 1, self.height - 1)
+        ]
+        for x, y in corners:
+            self.get_cell(x, y).state_type = StateType.SUPER_PACGUM
+        maze_center = self.get_cell(self.width // 2, self.height // 2)
+        available = []
+        for row in self.grid:
+            for cell in row:
+                if (cell.state_type == StateType.EMPTY
+                        and cell is not maze_center
+                        and any([cell.north, cell.east, cell.south, cell.west])):
+                    available.append(cell)
+        count = config.pacgum
+        if count > len(available):
+            print(
+                f"Warning: requested {count} pacgum but only "
+                f"{len(available)} cells available, clamping"
+            )
+            count = len(available)
+        selected = random.sample(available, count)
+        for cell in selected:
+            cell.state_type = StateType.PACGUM
 
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
-    #Niveau 1
+    # Niveau 1
     grid1 = Grid(
         width=config.levels[0].width,
         height=config.levels[0].height,
         seed=config.seed
     )
-    #Niveau 2
+    # Niveau 2
     grid2 = Grid(
         width=config.levels[0].width,
         height=config.levels[0].height,
