@@ -18,6 +18,10 @@ class Cell:
     west: bool
     state_type: StateType = StateType.EMPTY
 
+    @property
+    def coordinates(self) -> tuple[int, int]:
+        return self.y, self.x
+
 
 def create_cell(x, y, value) -> Cell:
     return Cell(
