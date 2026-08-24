@@ -9,6 +9,7 @@ class TextColors:
     cyn = '\033[36m'
     clr = '\033[0m'
 
+
 class Movements:
     """Movements possible for token entities"""
     UP = "up"

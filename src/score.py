@@ -25,10 +25,10 @@ class Score(BaseModel):
 
 # Class responsible for managing scores.
 class ScoreManager:
-    def __init__(self) -> None:
+    def __init__(self, highscore_filename: str) -> None:
         self._root_path: Path = Path(__file__).parent.parent
         self._score_directory_path: Path = self._root_path / "data"
-        self._score_file_path: Path = self._score_directory_path / "highscores.json"
+        self._score_file_path: Path = self._score_directory_path / f"{highscore_filename}"
         self._score_board_valided: bool = True
         self.score_board: list[dict[str, int | str]] = []
         try:
@@ -52,10 +52,7 @@ class ScoreManager:
     def load_scores(self) -> None:
         with open(self._score_file_path, "r", encoding="utf-8") as scores_list:
             scores_string = scores_list.read()
-        try:
-            self.score_board_validator(scores_string)
-        except ScErr as se:
-            raise se
+        self.score_board_validator(scores_string)
 
     # Export scores into a JSON file, idealy before the game closes.
     def export_scores(self) -> None:
@@ -69,6 +66,7 @@ class ScoreManager:
             json.dump(self.score_board, score_file, indent=4)
 
     # Verify then register an individual score into the score board.
+    # CHECK ERROR RAISING FROM THIS CONDITION /!\
     def register_score(self, player_score: dict[str, int | str]) -> None:
         try:
             self.score_validator(player_score)
@@ -83,10 +81,11 @@ class ScoreManager:
     def check_file_path(self) -> None:
         try:
             if not self._score_directory_path.is_dir():
-                raise ScErr(ScErrType.FILE_NOT_FOUND, None)
-            if not self._score_file_path.is_file():
                 raise ScErr(ScErrType.DIR_NOT_FOUND, None)
+            if not self._score_file_path.is_file():
+                raise ScErr(ScErrType.FILE_NOT_FOUND, None)
         except ScErr as se:
+                # Change to default file
                 raise se
 
     # Score board reset option
@@ -130,6 +129,7 @@ class ScoreManager:
 
         self.player_score = player_score
 
+
 if __name__ == "__main__":
     gaspard: dict = {
         "name" : "Gaspard",
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     tristan_score = 356
 
     try:
-        score_manager = ScoreManager()
+        score_manager = ScoreManager("highscores.json")
         print(score_manager)
         print(
             score_manager.compare_player_score(gaspar_score),
