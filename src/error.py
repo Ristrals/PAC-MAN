@@ -56,7 +56,7 @@ class ScoreError(Exception):
             if len(self._score_error.errors()) > 0:
                 _input = str(self._score_error.errors()[0]['input'])
                 _location = (f"line {self._score_error.errors()[0]['loc'][0]} at "
-                                  f"key '{self._score_error.errors()[0]['loc'][0]}'")
+                                  f"key '{self._score_error.errors()[0]['loc'][1]}'")
                 _msg = f"line {self._score_error.errors()[0]['msg']}"
                 self._err_message += (
                     f"{Tc.ylw}Input '{_input}' ({_location}) is incorrect.\n"

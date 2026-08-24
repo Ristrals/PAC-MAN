@@ -8,8 +8,9 @@ class MainMenuView(arcade.View):
         self.options = ["Start", "Exit"]
         self.selected = 0
         try:
-            self.score_manager = ScoreManager()
-        except Exception:
+            self.score_manager = ScoreManager("highscores.json")
+        except Exception as e:
+            print(e)
             self.score_manager = None
 
     def on_draw(self):
@@ -33,9 +34,9 @@ class MainMenuView(arcade.View):
             anchor_x="center",
             bold=True
         )
-        for i in range(5):
-            if self.score_manager and i < len(self.score_manager.score_board):
-                entry = self.score_manager.score_board[i]
+        entries = self.score_manager.get_top_10()
+        for i, entry in enumerate(entries[:5]):
+            if self.score_manager:
                 text = f"{i + 1}.{entry['name']} - {entry['score']} pts"
             else:
                 text = f"{i + 1}. --- - --- pts"
@@ -46,10 +47,9 @@ class MainMenuView(arcade.View):
                 arcade.color.WHITE,
                 15
             )
-        for i in range(5):
+        for i, entry in enumerate(entries[5:]):
             idx = i + 5
-            if self.score_manager and idx < len(self.score_manager.score_board):
-                entry = self.score_manager.score_board[idx]
+            if self.score_manager:
                 text = f"{idx + 1}.{entry['name']} - {entry['score']} pts"
             else:
                 text = f"{idx + 1}. --- - --- pts"

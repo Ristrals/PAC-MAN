@@ -37,7 +37,7 @@ class ScoreManager:
         except ScErr as se:
             self.reset_score_board()
             self._score_board_valided = False
-            raise se
+            print(se)
         self.player_score: dict[str, int | str] = {}
 
     # String function.
