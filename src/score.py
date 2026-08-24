@@ -68,10 +68,7 @@ class ScoreManager:
     # Verify then register an individual score into the score board.
     # CHECK ERROR RAISING FROM THIS CONDITION /!\
     def register_score(self, player_score: dict[str, int | str]) -> None:
-        try:
-            self.score_validator(player_score)
-        except ScErr as se:
-            raise se
+        self.score_validator(player_score)
         if self.score_board[9]['name'] == "Player":
             self.score_board.pop(9)
         self.score_board.append(self.player_score)
@@ -79,14 +76,10 @@ class ScoreManager:
 
     # Checks if highscore file and directory exists in project.
     def check_file_path(self) -> None:
-        try:
-            if not self._score_directory_path.is_dir():
-                raise ScErr(ScErrType.DIR_NOT_FOUND, None)
-            if not self._score_file_path.is_file():
-                raise ScErr(ScErrType.FILE_NOT_FOUND, None)
-        except ScErr as se:
-                # Change to default file
-                raise se
+        if not self._score_directory_path.is_dir():
+            raise ScErr(ScErrType.DIR_NOT_FOUND, None)
+        if not self._score_file_path.is_file():
+            raise ScErr(ScErrType.FILE_NOT_FOUND, None)
 
     # Score board reset option
     def reset_score_board(self) -> None:
@@ -132,7 +125,7 @@ class ScoreManager:
 
 if __name__ == "__main__":
     gaspard: dict = {
-        "name" : "Gaspard",
+        "name" : "Gaspardkasdlasdlkalsdka",
         "score" : 164
     }
     jun: dict = {
