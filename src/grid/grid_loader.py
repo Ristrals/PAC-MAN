@@ -18,9 +18,9 @@ class Grid:
             if isinstance(self.seed, int):
                 m.generate(seed=self.seed)
         except Exception as e:
-            print(f"Error: maze generation is failed, {e}")
+            raise Exception(f"Error: maze generation is failed, {e}")
         if not m.maze:
-            print("Error: maze data is empty")
+            raise Exception("Error: maze data is empty")
         grid: list[list[Cell]] = []
         for y, row in enumerate(m.maze):
             row_cells: list[Cell] = []
@@ -33,7 +33,8 @@ class Grid:
     def get_cell(self, x, y) -> Cell:
         return self.grid[y][x]
 
-    def place_items(self) -> None:
+    def place_items(self, pacgum_count: int) -> None:
+        count = pacgum_count
         corners = [
             (0, 0),
             (self.width - 1, 0),
@@ -50,7 +51,6 @@ class Grid:
                         and cell is not maze_center
                         and any([cell.north, cell.east, cell.south, cell.west])):
                     available.append(cell)
-        count = config.pacgum
         if count > len(available):
             print(
                 f"Warning: requested {count} pacgum but only "
@@ -70,9 +70,4 @@ if __name__ == "__main__":
         height=config.levels[0].height,
         seed=config.seed
     )
-    # Niveau 2
-    grid2 = Grid(
-        width=config.levels[0].width,
-        height=config.levels[0].height,
-        seed=None
-    )
+    grid1.place_items(config.pacgum)
