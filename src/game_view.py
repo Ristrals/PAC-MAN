@@ -85,15 +85,15 @@ class GameView(arcade.View):
                     arcade.draw_circle_filled(
                         center_x,
                         center_y,
-                        self.cell_size * 0.3,
-                        arcade.color.WHITE
+                        self.cell_size * 0.25,
+                        arcade.color.BLUE
                     )
                 elif cell.state_type == StateType.PACGUM:
                     arcade.draw_circle_filled(
                         center_x,
                         center_y,
-                        self.cell_size * 0.1,
-                        arcade.color.WHITE
+                        self.cell_size * 0.15,
+                        arcade.color.BLUE
                     )
 
     def draw_page(self):
