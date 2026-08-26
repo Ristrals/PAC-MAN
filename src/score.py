@@ -86,17 +86,18 @@ class ScoreManager:
             self._is_valid_score_board = False
 
         # __init__ Loading score board from file's data
-        try:
-            self.load_scores()
-        except ScErr as se:
-            print(se.err_type)
-            if se.err_type in ("json_invalid", "missing"):
-                print(se)
-                self.reset_score_board()
-                self._is_valid_score_board = False
-            else:
-                print(se)
-                self.reset_score_board()
+        if self._is_valid_score_board:
+            try:
+                self.load_scores()
+            except ScErr as se:
+                print(se.err_type)
+                if se.err_type in ("json_invalid", "missing"):
+                    print(se)
+                    self.reset_score_board()
+                    self._is_valid_score_board = False
+                else:
+                    print(se)
+                    self.reset_score_board()
 
     # String function.
     def __str__(self) -> str:
