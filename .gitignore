@@ -1,7 +1,4 @@
 .venv
 .idea
-data/highscore_temp.json
-data/highscores.json
-data/highscores_default.json
 *.pyc
 __pycache__
