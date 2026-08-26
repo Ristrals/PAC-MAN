@@ -1,6 +1,8 @@
-from src.config import GameConfig
+from src.config import GameConfig, load_config
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType
+
+
 import arcade
 
 
@@ -18,12 +20,17 @@ class GameView(arcade.View):
         self.cell_size = min(cell_size_w, cell_size_h)
         self.offset_x = (self.window.width - self.grid.width * self.cell_size) / 2
         self.offset_y = (self.window.height - self.grid.height * self.cell_size) / 2
+        self.pause = False
+        self.options = ["RESUME", "MAIN MENU"]
+        self.selected = 0
 
     def on_draw(self):
         self.clear()
         self.draw_maze()
         self.draw_items()
         self.draw_page()
+        if self.pause:
+            self.draw_pause_menu()
 
     def draw_maze(self):
         for row in self.grid.grid:
@@ -96,6 +103,31 @@ class GameView(arcade.View):
                         arcade.color.BLUE
                     )
 
+    def draw_pause_menu(self):
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            self.window.width,
+            self.window.height,
+            (0, 0, 0, 200)
+        )
+        for i, option in enumerate(self.options):
+            if i == self.selected:
+                color = arcade.color.BLUE
+                prefix = ">"
+            else:
+                color = arcade.color.WHITE
+                prefix = " "
+            arcade.draw_text(
+                prefix + option,
+                self.window.width / 2,
+                self.window.height * 0.85 - 200 if i == 0 else self.window.height * 0.85 - 400,
+                color,
+                24,
+                anchor_x="center",
+                bold=True
+            )
+
     def draw_page(self):
         arcade.draw_text(
             "DIRECTIONS: ↑ ↓ ← →",
@@ -122,7 +154,7 @@ class GameView(arcade.View):
             anchor_x="center"
         )
         arcade.draw_text(
-            "PAC-MAN",
+            "LEVEL - 1",
             self.window.width / 2,
             self.window.height * 0.85,
             arcade.color.YELLOW,
@@ -131,9 +163,27 @@ class GameView(arcade.View):
             bold=True
         )
 
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.P:
+            self.pause = not self.pause
+            return
+
+        if self.pause:
+            if key == arcade.key.UP:
+                self.selected = 0
+            elif key == arcade.key.DOWN:
+                self.selected = 1
+            elif key == arcade.key.ENTER:
+                if self.selected == 0:
+                    self.pause = not self.pause
+                elif self.selected == 1:
+                    from src.main_menu import MainMenuView
+                    menu = MainMenuView(load_config("data/configuration.json"))
+                    self.window.show_view(menu)
+            return
+
 
 if __name__ == "__main__":
-    from src.config import load_config
     config = load_config("data/configuration.json")
     screen_width, screen_height = arcade.get_display_size()
     window = arcade.Window(int(screen_width * 0.95), int(screen_height * 0.95), "PAC-MAN Test")
