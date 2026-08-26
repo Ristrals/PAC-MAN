@@ -118,7 +118,7 @@ class ScoreManager:
         entries_json = json.dumps(entries)
         self.score_board = ScoreBoard.validation_mitigation(entries_json).scores
         if not self._is_valid_score_board:
-            self._score_file_path = self._score_directory_path / "highscore_temp.json"
+            self._score_file_path = self._score_directory_path / "highscores_temp.json"
         with open(self._score_file_path, "w", encoding="utf-8") as score_file:
             json.dump([scr.model_dump() for scr in self.score_board], score_file, indent=4)
 
