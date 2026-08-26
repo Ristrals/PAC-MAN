@@ -1,6 +1,8 @@
 from src.config import GameConfig
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType
+
+
 import arcade
 
 

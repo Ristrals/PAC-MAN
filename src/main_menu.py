@@ -1,9 +1,13 @@
-import arcade
 from src.score import ScoreManager
+from src.config import GameConfig
+from src.game_view import GameView
+
+
+import arcade
 
 
 class MainMenuView(arcade.View):
-    def __init__(self):
+    def __init__(self, config: GameConfig):
         super().__init__()
         self.options = ["Start", "Exit"]
         self.selected = 0
@@ -12,6 +16,7 @@ class MainMenuView(arcade.View):
         except Exception as e:
             print(e)
             self.score_manager = None
+        self.config = config
 
     def on_draw(self):
         self.clear()
@@ -37,7 +42,7 @@ class MainMenuView(arcade.View):
         entries = self.score_manager.get_top_10()
         for i, entry in enumerate(entries[:5]):
             if self.score_manager:
-                text = f"{i + 1}.{entry['name']} - {entry['score']} pts"
+                text = f"{i + 1}.{entry.name} - {entry.score} pts"
             else:
                 text = f"{i + 1}. --- - --- pts"
             arcade.draw_text(
@@ -50,7 +55,7 @@ class MainMenuView(arcade.View):
         for i, entry in enumerate(entries[5:]):
             idx = i + 5
             if self.score_manager:
-                text = f"{idx + 1}.{entry['name']} - {entry['score']} pts"
+                text = f"{idx + 1}.{entry.name} - {entry.score} pts"
             else:
                 text = f"{idx + 1}. --- - --- pts"
             arcade.draw_text(
@@ -115,8 +120,8 @@ class MainMenuView(arcade.View):
             self.selected = 1
         elif key == arcade.key.ENTER:
             if self.selected == 0:
-                # start game
-                pass
+                game_view = GameView(self.config)
+                self.window.show_view(game_view)
             elif self.selected == 1:
                 arcade.close_window()
         elif key == arcade.key.ESCAPE:
@@ -124,8 +129,10 @@ class MainMenuView(arcade.View):
 
 
 if __name__ == "__main__":
+    from src.config import load_config
+    config = load_config("data/configuration.json")
     screen_width, screen_height = arcade.get_display_size()
     window = arcade.Window(int(screen_width * 0.95), int(screen_height * 0.95), "PAC-MAN")
-    menu = MainMenuView()
+    menu = MainMenuView(config)
     window.show_view(menu)
     arcade.run()
