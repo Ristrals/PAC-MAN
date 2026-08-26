@@ -52,11 +52,11 @@ class ScoreError(Exception):
 
         if self._err_type == "file_not_found":
             self._err_message += (f"{Tc.ylw}File 'highscores.json' could not be found{Tc.clr}\n"
-                                  f"{Tc.red}[!]No scores will be recorded{Tc.clr}\n")
+                                  f"{Tc.red}[!]Scores will be exported in a temporary file{Tc.clr}\n")
 
         if self._err_type == "dir_not_found":
             self._err_message += (f"{Tc.ylw}Directory 'data' could not be found{Tc.clr}\n"
-                                  f"{Tc.red}[!]No scores will be recorded{Tc.clr}\n")
+                                  f"{Tc.red}[!]Scores will be exported in a temporary file{Tc.clr}\n")
 
         if self._err_type in ("schema_invalid", "missing"):
             assert isinstance(self._score_error, ValidationError)
