@@ -1,0 +1,105 @@
+# PACMAN - 42Luxembourg 2026 - kmalfois
+
+from abc import ABC
+from math import isclose
+from pydantic import BaseModel, model_validator
+from src.data_lib import Movements as Mvt
+from src.grid.grid_loader import Grid
+from src.grid.cell import Cell
+
+
+class Token(BaseModel, ABC):
+    y: float
+    x: float
+    speed: float
+    current_cell: Cell
+    direction: Mvt | None = None
+    buffered_direction: Mvt | None = None
+    active: bool = False
+
+    # Initial position in case of reset
+    init_y: float | None = None
+    init_x: float | None = None
+    init_cell: Cell | None = None
+
+    # Sets initial position after item creation
+    @model_validator(mode="after")
+    def _set_initial_position(self) -> 'Token':
+        if self.init_y is None:
+            self.init_y = self.y
+        if self.init_x is None:
+            self.init_x = self.x
+        if self.init_cell is None:
+            self.init_cell = self.current_cell
+        return self
+
+    # Reset token to initial position
+    def reset_position(self) -> None:
+        assert (
+            isinstance(self.init_cell, Cell) and
+            isinstance(self.init_y, float) and
+            isinstance(self.init_x, float)
+        )
+        self.y = self.init_y
+        self.x = self.init_x
+        self.current_cell = self.init_cell
+
+    # Movement
+    def move(self, dt: float, grid: Grid) -> None:
+        if not self.active:
+            return
+
+        cy, cx = self.current_cell.coordinates
+        at_center = self._is_cell_centered()
+
+        if self.buffered_direction:
+            if self.direction is None or self.buffered_direction == self.direction.opposite:
+                if self._can_move(self.buffered_direction):
+                    self.direction = self.buffered_direction
+                    self.buffered_direction = None
+            elif at_center and self._can_move(self.buffered_direction):
+                self.direction = self.buffered_direction
+                self.y, self.x = cy + 0.5, cx + 0.5
+                self.buffered_direction = None
+
+        if self.direction is None:
+            return
+
+        if not self._can_move(self.direction) and at_center:
+            self.y, self.x = cy + 0.5, cx + 0.5
+            return
+
+        dir_y, dir_x = self.direction.cell_offset
+        self.y += dir_y * self.speed * dt
+        self.x += dir_x * self.speed * dt
+
+        new_cy, new_cx = int(self.y), int(self.x)
+        if (new_cy, new_cx) != (cy, cx):
+            self.current_cell = grid.get_cell(new_cy, new_cx)
+
+    # [Tool] Check if token is at cell center
+    def _is_cell_centered(self) -> bool:
+        cy, cx = self.current_cell.coordinates
+        if isclose(self.y, cy + 0.5, abs_tol=0.08) and isclose(self.x, cx + 0.5, abs_tol=0.08):
+            return True
+        return False
+
+    # [Tool] Return if the entity is allowed to move in current direction
+    def _can_move(self, direction: Mvt | None) -> bool:
+        match direction:
+            case Mvt.UP: return self.current_cell.north
+            case Mvt.DOWN: return self.current_cell.south
+            case Mvt.LEFT: return self.current_cell.west
+            case Mvt.RIGHT: return self.current_cell.east
+            case _: return False
+
+
+    # [Properties]
+    @property
+    def coordinates(self) -> tuple[float, float]:
+        return self.y, self.x
+
+    @coordinates.setter
+    def coordinates(self, value: tuple[float, float]) -> None:
+        self.y, self.x = value
+
