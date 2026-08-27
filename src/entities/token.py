@@ -9,9 +9,9 @@ from src.grid.cell import Cell
 
 
 class Token(BaseModel, ABC):
-    y: float
-    x: float
-    speed: float
+    y: float = 0.0
+    x: float = 0.0
+    speed: float = 0.0
     current_cell: Cell
     direction: Mvt | None = None
     buffered_direction: Mvt | None = None

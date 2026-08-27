@@ -3,5 +3,6 @@
 from abc import ABC
 
 
-class GhostAI(ABC):
+# Base ghost behavior class
+class GhostBehavior(ABC):
     pass
