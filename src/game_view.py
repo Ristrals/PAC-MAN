@@ -14,6 +14,7 @@ class GameView(arcade.View):
             config.levels[0].height,
             config.seed
         )
+        self.config = config
         self.grid.place_items(config.pacgum)
         cell_size_w = (self.window.width * 0.6) / self.grid.width
         cell_size_h = (self.window.height * 0.6) / self.grid.height
@@ -23,11 +24,15 @@ class GameView(arcade.View):
         self.pause = False
         self.options = ["RESUME", "MAIN MENU"]
         self.selected = 0
+        self.current_level = 1
+        self.time_left = config.level_max_time
+        self.score = 0
 
     def on_draw(self):
         self.clear()
         self.draw_maze()
         self.draw_items()
+        self.draw_hud()
         self.draw_page()
         if self.pause:
             self.draw_pause_menu()
@@ -37,6 +42,14 @@ class GameView(arcade.View):
             for cell in row:
                 px = self.offset_x + cell.x * self.cell_size
                 py = self.offset_y + (self.grid.height - 1 - cell.y) * self.cell_size
+                if not any([cell.north, cell.east, cell.south, cell.west]):
+                    arcade.draw_lbwh_rectangle_filled(
+                        px,
+                        py,
+                        self.cell_size,
+                        self.cell_size,
+                        arcade.color.BLUE
+                    )
                 if not cell.north:
                     arcade.draw_line(
                         px,
@@ -44,7 +57,7 @@ class GameView(arcade.View):
                         px + self.cell_size,
                         py + self.cell_size,
                         arcade.color.WHITE,
-                        10
+                        6
                     )
                 if not cell.east:
                     arcade.draw_line(
@@ -53,7 +66,7 @@ class GameView(arcade.View):
                         px + self.cell_size,
                         py,
                         arcade.color.WHITE,
-                        10
+                        6
                     )
                 if not cell.south:
                     arcade.draw_line(
@@ -62,7 +75,7 @@ class GameView(arcade.View):
                         px + self.cell_size,
                         py,
                         arcade.color.WHITE,
-                        10
+                        6
                     )
                 if not cell.west:
                     arcade.draw_line(
@@ -71,15 +84,8 @@ class GameView(arcade.View):
                         px,
                         py,
                         arcade.color.WHITE,
-                        10
+                        6
                     )
-        arcade.draw_lbwh_rectangle_filled(
-            0,
-            0,
-            self.window.width,
-            60,
-            arcade.color.ORANGE
-        )
 
     def draw_items(self):
         for row in self.grid.grid:
@@ -102,6 +108,56 @@ class GameView(arcade.View):
                         self.cell_size * 0.15,
                         arcade.color.BLUE
                     )
+
+    def on_update(self, delta_time):
+        if not self.pause:
+            self.time_left -= delta_time
+            if self.time_left == 0:
+                # game over
+                pass
+
+    def draw_hud(self):
+        '''
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            self.window.height - 40,
+            self.window.width,
+            self.window.height,
+            arcade.color.ORANGE
+        )
+        '''
+        arcade.draw_text(
+            "❤️" * self.config.lives,
+            self.window.width / 10,
+            self.window.height - 30,
+            arcade.color.WHITE,
+            20,
+            anchor_x="center"
+        )
+        arcade.draw_text(
+            f"LEVEL: {self.current_level}",
+            self.window.width / 10 * 3,
+            self.window.height - 30,
+            arcade.color.WHITE,
+            20,
+            anchor_x="center"
+        )
+        arcade.draw_text(
+            f"SCORE: {self.score}",
+            self.window.width / 10 * 6,
+            self.window.height - 30,
+            arcade.color.WHITE,
+            20,
+            anchor_x="center"
+        )
+        arcade.draw_text(
+            f"TIMER: {int(self.time_left)}",
+            self.window.width / 10 * 9,
+            self.window.height - 30,
+            arcade.color.WHITE,
+            20,
+            anchor_x="center"
+        )
 
     def draw_pause_menu(self):
         arcade.draw_lbwh_rectangle_filled(
@@ -129,6 +185,13 @@ class GameView(arcade.View):
             )
 
     def draw_page(self):
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            self.window.width,
+            60,
+            arcade.color.ORANGE
+        )
         arcade.draw_text(
             "DIRECTIONS: ↑ ↓ ← →",
             self.window.width / 4,
@@ -152,15 +215,6 @@ class GameView(arcade.View):
             arcade.color.BLACK,
             15,
             anchor_x="center"
-        )
-        arcade.draw_text(
-            "LEVEL - 1",
-            self.window.width / 2,
-            self.window.height * 0.85,
-            arcade.color.YELLOW,
-            60,
-            anchor_x="center",
-            bold=True
         )
 
     def on_key_press(self, key, modifiers):
