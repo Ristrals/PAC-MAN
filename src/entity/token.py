@@ -103,3 +103,14 @@ class Token(BaseModel, ABC):
     def coordinates(self, value: tuple[float, float]) -> None:
         self.y, self.x = value
 
+    @property
+    def current_direction(self) -> Mvt | None:
+        return self.direction
+
+    @property
+    def input_direction(self) -> Mvt | None:
+        return self.buffered_direction
+
+    @input_direction.setter
+    def input_direction(self, value: Mvt | None) -> None:
+        self.buffered_direction = value
