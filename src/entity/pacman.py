@@ -10,7 +10,3 @@ from src.entity.ghost import Ghost, GhostState as Gs
 class Pacman(Token):
     is_powered_up: bool = False
     is_invincible: bool = False
-
-
-
-
