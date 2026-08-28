@@ -1,6 +1,6 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
-from src.entity.ghost import Blinky, Pinky, Inky, Clyde, Ghost, GhostState
+from src.entity.ghost import Blinky, Pinky, Inky, Clyde, Ghost, GhostState as Gs
 from src.entity.pacman import Pacman
 
 __all__ = [
@@ -8,6 +8,6 @@ __all__ = [
     "Pinky",
     "Inky",
     "Clyde",
-    "GhostState",
+    "Gs",
     "Pacman",
 ]
