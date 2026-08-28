@@ -23,6 +23,10 @@ class GameView(arcade.View):
         self.offset_x = (self.window.width - self.grid.width * self.cell_size) / 2
         self.offset_y = (self.window.height - self.grid.height * self.cell_size) / 2
         self.pause = False
+        self.cheat_mode = False
+        self.invincible = False
+        self.ghost_freeze = False
+        self.lives = config.lives
         self.options = ["RESUME", "MAIN MENU"]
         self.selected = 0
         self.current_level = 1
@@ -37,6 +41,8 @@ class GameView(arcade.View):
         self.draw_page()
         if self.pause:
             self.draw_pause_menu()
+        if self.cheat_mode:
+            self.draw_cheat_panel()
 
     def draw_maze(self):
         for row in self.grid.grid:
@@ -110,6 +116,31 @@ class GameView(arcade.View):
                         arcade.color.BLUE
                     )
 
+    def draw_cheat_panel(self):
+        arcade.draw_lbwh_rectangle_filled(
+            0,
+            0,
+            self.window.width,
+            self.window.height,
+            (0, 0, 0, 200)
+        )
+        cheat = [
+            f"[I] Invincible: {'ON' if self.invincible else 'OFF'}",
+            f"[N] Skip Level",
+            f"[F] Freeze Ghosts: {'ON' if self.ghost_freeze else 'OFF'}",
+            f"[L] Add Life ({self.lives})"
+        ]
+        for i, text in enumerate(cheat):
+            arcade.draw_text(
+                text,
+                self.window.width / 2,
+                self.window.height / 2 + 50 - i * 80,
+                arcade.color.WHITE,
+                18,
+                anchor_x="center",
+                bold=True
+            )
+
     def draw_hud(self):
         '''
         arcade.draw_lbwh_rectangle_filled(
@@ -121,7 +152,7 @@ class GameView(arcade.View):
         )
         '''
         arcade.draw_text(
-            "❤️" * self.config.lives,
+            "❤️" * self.lives,
             self.window.width / 10,
             self.window.height - 30,
             arcade.color.WHITE,
@@ -216,6 +247,10 @@ class GameView(arcade.View):
             self.pause = not self.pause
             return
 
+        if key == arcade.key.C:
+            self.cheat_mode = not self.cheat_mode
+            return
+
         if self.pause:
             if key == arcade.key.UP:
                 self.selected = 0
@@ -230,6 +265,19 @@ class GameView(arcade.View):
                     self.window.show_view(menu)
             return
 
+        if self.cheat_mode:
+            if key == arcade.key.I:
+                self.invincible = not self.invincible
+            elif key == arcade.key.N:
+                if self.current_level < len(self.config.levels):
+                    self.current_level += 1
+            elif key == arcade.key.F:
+                self.ghost_freeze = not self.ghost_freeze
+            elif key == arcade.key.L:
+                self.lives += 1
+            return
+
+    '''
     def on_update(self, delta_time):
         if not self.pause:
             self.time_left -= delta_time
@@ -237,7 +285,7 @@ class GameView(arcade.View):
                 self.window.show_view(EndView(self.score, self.config, False))
             if self.current_level > len(self.config.levels):
                 self.window.show_view(EndView(self.score, self.config, True))
-
+    '''
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
