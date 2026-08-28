@@ -45,12 +45,12 @@ class Token(BaseModel, ABC):
         self.current_cell = self.init_cell
 
     # Movement
-    def move(self, dt: float, grid: Grid) -> None:
+    def move(self, delta_time: float, grid: Grid) -> None:
         if not self.active:
             return
 
         cy, cx = self.current_cell.coordinates
-        at_center = self._is_cell_centered()
+        at_center = self.is_cell_centered()
 
         if self.buffered_direction:
             if self.direction is None or self.buffered_direction == self.direction.opposite:
@@ -70,15 +70,15 @@ class Token(BaseModel, ABC):
             return
 
         dir_y, dir_x = self.direction.cell_offset
-        self.y += dir_y * self.speed * dt
-        self.x += dir_x * self.speed * dt
+        self.y += dir_y * self.speed * delta_time
+        self.x += dir_x * self.speed * delta_time
 
         new_cy, new_cx = int(self.y), int(self.x)
         if (new_cy, new_cx) != (cy, cx):
             self.current_cell = grid.get_cell(new_cy, new_cx)
 
     # [Tool] Check if token is at cell center
-    def _is_cell_centered(self) -> bool:
+    def is_cell_centered(self) -> bool:
         cy, cx = self.current_cell.coordinates
         if isclose(self.y, cy + 0.5, abs_tol=0.08) and isclose(self.x, cx + 0.5, abs_tol=0.08):
             return True
