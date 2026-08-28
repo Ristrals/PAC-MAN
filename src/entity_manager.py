@@ -62,7 +62,7 @@ class EntityManager:
                     case ent.Gs.FRIGHTENED:
                         summary.eaten_ghosts.append(ghost)
                         ghost.state = ent.Gs.EATEN
-                    case ent.Gs.CHASE, ent.Gs.SCATTER:
+                    case ent.Gs.CHASE | ent.Gs.SCATTER:
                         summary.defeated = True
                         self.pacman.active = False
                         break
