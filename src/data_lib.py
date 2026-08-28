@@ -13,7 +13,7 @@ class TextColors:
 
 
 class Movements(Enum):
-    """Movements possible for token entities"""
+    """Movements possible for token entity"""
     UP = "up"
     DOWN = "down"
     LEFT = "left"
