@@ -1,7 +1,7 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import dataclass, field
+from math import dist
 from src import entity as ent
 from src.config import GameConfig
 from src.grid.grid_loader import Grid
@@ -10,15 +10,16 @@ from src.grid.cell import StateType as St
 
 @dataclass
 class FrameSummary:
-    eat_pacgum: bool
-    eat_superpacgum: bool
-    defeated: bool
+    eat_pacgum: bool = False
+    eat_superpacgum: bool = False
+    defeated: bool = False
     eaten_ghosts: list[ent.Ghost] = field(default_factory=list)
 
 
 class EntityManager:
-    def __init__(self, config: GameConfig) -> None:
+    def __init__(self, config: GameConfig, grid: Grid) -> None:
         self.config: GameConfig = config
+        self.grid: Grid = grid
         self.pacman: ent.Pacman = ent.Pacman(y=,x=,current_cell=,speed=)
         self.ghosts: list[ent.Ghost] = [
             ent.Blinky(y=, x=, current_cell=, speed=,
@@ -30,85 +31,63 @@ class EntityManager:
             ent.Clyde(y=, x=, current_cell=, speed=,
                       target_coord=self.pacman.coordinates, scatter_coord=),
         ]
-        self.frame_sumary = FrameSummary()
 
-    def udpate(self, delta_time: float, grid: Grid) -> FrameSummary:
-        score_delta: int = 0
-        pacman_defeated: bool = False
-        eaten_ghosts: list[ent.Ghost] = []
+    def update(self, delta_time: float) -> FrameSummary:
+        summary = FrameSummary()
 
-        # All move
-        self.pacman.move(delta_time, grid)
+        # All token move
+        self.pacman.move(delta_time, self.grid)
         for ghost in self.ghosts:
-            ghost.move(delta_time, grid)
+            ghost.move(delta_time, self.grid)
 
         # Check if pacman is centered on a pacgum cell
         if self.pacman.is_cell_centered():
             match self.pacman.current_cell.state_type:
                 case St.PACGUM:
-                    score_delta += self.config.points_per_pacgum
+                    summary.eat_pacgum = True
                     self.pacman.current_cell.state_type = St.EMPTY
                 case St.SUPER_PACGUM:
-                    score_delta += self.config.points_per_super_pacgum
+                    summary.eat_superpacgum = True
+                    for ghost in self.ghosts:
+                        if ghost.state != ent.Gs.EATEN:
+                            ghost.state = ent.Gs.FRIGHTENED
                     self.pacman.current_cell.state_type = St.EMPTY
         
         # Solve collisions
+        for ghost in self.ghosts:
+            if dist(ghost.coordinates, self.pacman.coordinates) < 0.5:
+                match ghost.state:
+                    case ent.Gs.FRIGHTENED:
+                        summary.eaten_ghosts.append(ghost)
+                        ghost.state = ent.Gs.EATEN
+                    case ent.Gs.CHASE, ent.Gs.SCATTER:
+                        summary.defeated = True
+                        self.pacman.active = False
+                        break
 
         # Update ghost target coordinates
-        # return FramSummary report
-        return self.frame_sumary
+        for ghost in self.ghosts:
+            if not self.pacman.active:  # if pacman was defeated all ghosts turn inactive
+                ghost.active = False
+            ghost.target_coord = self.pacman.coordinates
 
-    def _gum_check(self) -> None:
-        pass
+        # return FrameSummary report
+        return summary
 
-    def _collision_check(self) -> None:
-        pass
+    # Resets all token positions
+    def reset_positions(self) -> None:
+        self.pacman.coordinates = self.pacman.init_coord
+        for ghost in self.ghosts:
+            ghost.coordinates = ghost.init_coord
 
-    def _update_ghosts_target(self) -> None:
-        pass
+    # Adjust all ghost speeds
+    def set_ghost_speeds(self, speed: float) ->None:
+        for ghost in self.ghosts:
+            if ghost.state != ent.Gs.EATEN:
+                ghost.speed = speed
 
-# # src/game.py
-#
-# class EntityManager:
-#     """Handles token movement and interaction detection."""
-#
-#     def __init__(self, grid: Grid):
-#         self.grid = grid
-#         self.pacman = Pacman(...)
-#         self.ghosts: list[Ghost] = [Blinky(...), Pinky(...), Inky(...), Clyde(...)]
-#
-#     def update(self, dt: float) -> tuple[int, bool, Ghost | None]:
-#         """
-#         Updates physics & interactions.
-#         Returns a tuple of results back to GameController:
-#         (score_delta, pacman_died_flag, ghost_eaten_obj)
-#         """
-#         score_delta = 0
-#         pacman_died = False
-#         eaten_ghost = None
-#
-#         # 1. Physics updates
-#         self.pacman.move(dt, self.grid)
-#         for ghost in self.ghosts:
-#             ghost.move(dt, self.grid)
-#
-#         # 2. Check Pellets
-#         if self.pacman._is_cell_centered():
-#             cell = self.pacman.current_cell
-#             if cell.state_type == St.PACGUM:
-#                 cell.state_type = St.EMPTY
-#                 score_delta += 10
-#             elif cell.state_type == St.SUPER_PACGUM:
-#                 cell.state_type = St.EMPTY
-#                 score_delta += 50
-#                 self._trigger_frightened_ghosts()
-#
-#         # 3. Check Ghost Collisions
-#         for ghost in self.ghosts:
-#             if math.dist(self.pacman.coordinates, ghost.coordinates) < 0.5:
-#                 if ghost.state == GhostState.FRIGHTENED:
-#                     eaten_ghost = ghost
-#                 elif ghost.state in (GhostState.CHASE, GhostState.SCATTER):
-#                     pacman_died = True
-#
-#         return score_delta, pacman_died, eaten_ghost
+    # Adjust all ghost states
+    def set_ghost_states(self, ghost_state: ent.Gs) -> None:
+        for ghost in self.ghosts:
+            if ghost.state != ent.Gs.EATEN:
+                ghost.state = ghost_state
