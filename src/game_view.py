@@ -1,6 +1,7 @@
 from src.config import GameConfig, load_config
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType
+from src.end_view import EndView
 
 
 import arcade
@@ -108,13 +109,6 @@ class GameView(arcade.View):
                         self.cell_size * 0.15,
                         arcade.color.BLUE
                     )
-
-    def on_update(self, delta_time):
-        if not self.pause:
-            self.time_left -= delta_time
-            if self.time_left == 0:
-                # game over
-                pass
 
     def draw_hud(self):
         '''
@@ -235,6 +229,14 @@ class GameView(arcade.View):
                     menu = MainMenuView(load_config("data/configuration.json"))
                     self.window.show_view(menu)
             return
+
+    def on_update(self, delta_time):
+        if not self.pause:
+            self.time_left -= delta_time
+            if self.time_left <= 0 or self.lives <= 0:
+                self.window.show_view(EndView(self.score, self.config, False))
+            if self.current_level > len(self.config.levels):
+                self.window.show_view(EndView(self.score, self.config, True))
 
 
 if __name__ == "__main__":
