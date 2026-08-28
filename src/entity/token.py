@@ -18,17 +18,14 @@ class Token(BaseModel, ABC):
     active: bool = False
 
     # Initial position in case of reset
-    init_y: float | None = None
-    init_x: float | None = None
+    init_coord: tuple[float, float] | None = None
     init_cell: Cell | None = None
 
     # Sets initial position after item creation
     @model_validator(mode="after")
     def _set_initial_position(self) -> 'Token':
-        if self.init_y is None:
-            self.init_y = self.y
-        if self.init_x is None:
-            self.init_x = self.x
+        if self.init_coord is None:
+            self.init_cood = (self.y, self.x)
         if self.init_cell is None:
             self.init_cell = self.current_cell
         return self
@@ -37,11 +34,9 @@ class Token(BaseModel, ABC):
     def reset_position(self) -> None:
         assert (
             isinstance(self.init_cell, Cell) and
-            isinstance(self.init_y, float) and
-            isinstance(self.init_x, float)
+            isinstance(self.init_coord, tuple)
         )
-        self.y = self.init_y
-        self.x = self.init_x
+        self.y, self.x = self.init_coord
         self.current_cell = self.init_cell
 
     # Movement
@@ -77,14 +72,14 @@ class Token(BaseModel, ABC):
         if (new_cy, new_cx) != (cy, cx):
             self.current_cell = grid.get_cell(new_cy, new_cx)
 
-    # [Tool] Check if token is at cell center
+    # Check if token is at cell center
     def is_cell_centered(self) -> bool:
         cy, cx = self.current_cell.coordinates
         if isclose(self.y, cy + 0.5, abs_tol=0.08) and isclose(self.x, cx + 0.5, abs_tol=0.08):
             return True
         return False
 
-    # [Tool] Return if the entity is allowed to move in current direction
+    # Return if the entity is allowed to move in current direction
     def _can_move(self, direction: Mvt | None) -> bool:
         match direction:
             case Mvt.UP: return self.current_cell.north
