@@ -1,7 +1,6 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
 from enum import Enum
-from math import dist
 from src.entity.token import Token
 from src import behavior as bhvr
 
