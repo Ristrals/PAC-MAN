@@ -16,6 +16,8 @@ class FrameSummary:
     eaten_ghosts: list[ent.Ghost] = field(default_factory=list)
 
 
+# TO DO:
+# /!\ PROPER WAY TO RECOVER TOKEN POSITIONS/CELLS/GRID FROM GRIDLOADER NEEDED
 class EntityManager:
     def __init__(self, config: GameConfig, grid: Grid) -> None:
         self.config: GameConfig = config
