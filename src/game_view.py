@@ -10,18 +10,9 @@ import arcade
 class GameView(arcade.View):
     def __init__(self, config: GameConfig):
         super().__init__()
-        self.grid = Grid(
-            config.levels[0].width,
-            config.levels[0].height,
-            config.seed
-        )
         self.config = config
-        self.grid.place_items(config.pacgum)
-        cell_size_w = (self.window.width * 0.6) / self.grid.width
-        cell_size_h = (self.window.height * 0.6) / self.grid.height
-        self.cell_size = min(cell_size_w, cell_size_h)
-        self.offset_x = (self.window.width - self.grid.width * self.cell_size) / 2
-        self.offset_y = (self.window.height - self.grid.height * self.cell_size) / 2
+        self.current_level = 1
+        self.load_level()
         self.pause = False
         self.cheat_mode = False
         self.invincible = False
@@ -29,9 +20,33 @@ class GameView(arcade.View):
         self.lives = config.lives
         self.options = ["RESUME", "MAIN MENU"]
         self.selected = 0
-        self.current_level = 1
-        self.time_left = config.level_max_time
         self.score = 0
+
+    def calculate_render_params(self):
+        cell_size_w = (self.window.width * 0.6) / self.grid.width
+        cell_size_h = (self.window.height * 0.6) / self.grid.height
+        self.cell_size = min(cell_size_w, cell_size_h)
+        self.offset_x = (self.window.width - self.grid.width * self.cell_size) / 2
+        self.offset_y = (self.window.height - self.grid.height * self.cell_size) / 2
+
+    def load_level(self):
+        level_config = self.config.levels[self.current_level - 1]
+        seed = self.config.seed if self.current_level == 1 else None
+        self.grid = Grid(
+            level_config.width,
+            level_config.height,
+            seed
+        )
+        self.grid.place_items(self.config.pacgum)
+        self.time_left = self.config.level_max_time
+        self.calculate_render_params()
+
+    def next_level(self):
+        self.current_level += 1
+        if self.current_level > len(self.config.levels):
+            self.window.show_view(EndView(self.score, self.config, True))
+            return
+        self.load_level()
 
     def on_draw(self):
         self.clear()
@@ -64,7 +79,7 @@ class GameView(arcade.View):
                         px + self.cell_size,
                         py + self.cell_size,
                         arcade.color.WHITE,
-                        6
+                        1
                     )
                 if not cell.east:
                     arcade.draw_line(
@@ -73,7 +88,7 @@ class GameView(arcade.View):
                         px + self.cell_size,
                         py,
                         arcade.color.WHITE,
-                        6
+                        1
                     )
                 if not cell.south:
                     arcade.draw_line(
@@ -82,7 +97,7 @@ class GameView(arcade.View):
                         px + self.cell_size,
                         py,
                         arcade.color.WHITE,
-                        6
+                        1
                     )
                 if not cell.west:
                     arcade.draw_line(
@@ -91,7 +106,7 @@ class GameView(arcade.View):
                         px,
                         py,
                         arcade.color.WHITE,
-                        6
+                        1
                     )
 
     def draw_items(self):
@@ -106,14 +121,14 @@ class GameView(arcade.View):
                         center_x,
                         center_y,
                         self.cell_size * 0.25,
-                        arcade.color.BLUE
+                        arcade.color.PINK
                     )
                 elif cell.state_type == StateType.PACGUM:
                     arcade.draw_circle_filled(
                         center_x,
                         center_y,
                         self.cell_size * 0.15,
-                        arcade.color.BLUE
+                        arcade.color.YELLOW
                     )
 
     def draw_cheat_panel(self):
@@ -126,7 +141,7 @@ class GameView(arcade.View):
         )
         cheat = [
             f"[I] Invincible: {'ON' if self.invincible else 'OFF'}",
-            f"[N] Skip Level",
+            "[N] Skip Level",
             f"[F] Freeze Ghosts: {'ON' if self.ghost_freeze else 'OFF'}",
             f"[L] Add Life ({self.lives})"
         ]
@@ -270,14 +285,13 @@ class GameView(arcade.View):
                 self.invincible = not self.invincible
             elif key == arcade.key.N:
                 if self.current_level < len(self.config.levels):
-                    self.current_level += 1
+                    self.next_level()
             elif key == arcade.key.F:
                 self.ghost_freeze = not self.ghost_freeze
             elif key == arcade.key.L:
                 self.lives += 1
             return
 
-    '''
     def on_update(self, delta_time):
         if not self.pause:
             self.time_left -= delta_time
@@ -285,7 +299,7 @@ class GameView(arcade.View):
                 self.window.show_view(EndView(self.score, self.config, False))
             if self.current_level > len(self.config.levels):
                 self.window.show_view(EndView(self.score, self.config, True))
-    '''
+
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
