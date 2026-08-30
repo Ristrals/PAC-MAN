@@ -1,15 +1,14 @@
+.PHONY: run debug install sync clean fclean lint lint-strict
+
 PC = python3
 
 run:
-	uv run $(PC) -m src
+	uv run $(PC) -m src data/configuration.json
 
 debug:
-	uv run $(PC) -m pdb -m src
+	uv run $(PC) -m pdb -m src data/configuration.json
 
 install:
-	uv venv
-
-sync:
 	uv sync
 
 clean:
@@ -18,18 +17,17 @@ clean:
 
 fclean: clean
 	rm -rf .venv
-	rm -rf .cache/uv uv cache clean
 
 lint:
-	flake8
+	flake8 .
 	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+lint-strict:
+	flake8 .
+	mypy . --strict
 
 mp:
 	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 f8:
-	flake8
-
-lint-strict:
-	flake8
-	mypy . --strict
+	flake8 .
