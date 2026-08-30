@@ -2,7 +2,7 @@ from src.config import GameConfig, load_config
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType
 from src.end_view import EndView
-
+from src.data_lib import Movements
 
 import arcade
 
@@ -38,6 +38,15 @@ class GameView(arcade.View):
             seed
         )
         self.grid.place_items(self.config.pacgum)
+        from src.entity.pacman import Pacman
+        center_cell = self.grid.get_cell(self.grid.width // 2, self.grid.height // 2)
+        self.pacman = Pacman(
+            y=center_cell.y + 0.5,
+            x=center_cell.x + 0.5,
+            current_cell=center_cell,
+            speed=4.0,
+            active=True
+        )
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
 
@@ -52,6 +61,7 @@ class GameView(arcade.View):
         self.clear()
         self.draw_maze()
         self.draw_items()
+        self.draw_pacman()
         self.draw_hud()
         self.draw_page()
         if self.pause:
@@ -130,6 +140,16 @@ class GameView(arcade.View):
                         self.cell_size * 0.15,
                         arcade.color.YELLOW
                     )
+
+    def draw_pacman(self):
+        px = self.offset_x + self.pacman.x * self.cell_size
+        py = self.offset_y + (self.grid.height - 1 - self.pacman.y) * self.cell_size
+        arcade.draw_circle_filled(
+            px,
+            py,
+            self.cell_size * 0.4,
+            arcade.color.YELLOW
+        )
 
     def draw_cheat_panel(self):
         arcade.draw_lbwh_rectangle_filled(
@@ -258,12 +278,9 @@ class GameView(arcade.View):
         )
 
     def on_key_press(self, key, modifiers):
+        # pause menu
         if key == arcade.key.P:
             self.pause = not self.pause
-            return
-
-        if key == arcade.key.C:
-            self.cheat_mode = not self.cheat_mode
             return
 
         if self.pause:
@@ -280,6 +297,11 @@ class GameView(arcade.View):
                     self.window.show_view(menu)
             return
 
+        # cheat mode
+        if key == arcade.key.C:
+            self.cheat_mode = not self.cheat_mode
+            return
+
         if self.cheat_mode:
             if key == arcade.key.I:
                 self.invincible = not self.invincible
@@ -292,6 +314,16 @@ class GameView(arcade.View):
                 self.lives += 1
             return
 
+        # pacman move
+        if key == arcade.key.UP:
+            self.pacman.buffered_direction = Movements.UP
+        elif key == arcade.key.DOWN:
+            self.pacman.buffered_direction = Movements.DOWN
+        elif key == arcade.key.LEFT:
+            self.pacman.buffered_direction = Movements.LEFT
+        elif key == arcade.key.RIGHT:
+            self.pacman.buffered_direction = Movements.RIGHT
+
     def on_update(self, delta_time):
         if not self.pause:
             self.time_left -= delta_time
@@ -299,6 +331,12 @@ class GameView(arcade.View):
                 self.window.show_view(EndView(self.score, self.config, False))
             if self.current_level > len(self.config.levels):
                 self.window.show_view(EndView(self.score, self.config, True))
+
+        self.pacman.move(delta_time, self.grid)
+        if self.pacman.is_cell_centered():
+            if self.pacman.current_cell.state_type == StateType.PACGUM:
+                self.pacman.current_cell.state_type = StateType.EMPTY
+                self.score += self.config.points_per_pacgum
 
 
 if __name__ == "__main__":
