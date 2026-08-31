@@ -7,10 +7,10 @@ from src import behavior as bhvr
 
 # Ghost states
 class GhostState(Enum):
-    CHASE = ("chase", 0.75)
-    SCATTER = ("scatter", 0.75)
-    FRIGHTENED = ("frightened", 0.5)
-    EATEN = ("eaten", 1.80)
+    CHASE = ("chase", 0.75, )
+    SCATTER = ("scatter", 0.75, bhvr.ScatterBehavior())
+    FRIGHTENED = ("frightened", 0.5, bhvr.FrightenBehavior())
+    EATEN = ("eaten", 1.80, bhvr.EatenBehavior())
 
     def get_state(self) -> str:
         return self.value[0]
