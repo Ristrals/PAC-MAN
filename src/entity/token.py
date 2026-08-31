@@ -95,7 +95,8 @@ class Token(BaseModel, ABC):
         return self.y, self.x
 
     @coordinates.setter
-    def coordinates(self, value: tuple[float, float]) -> None:
+    def coordinates(self, value: tuple[float, float] | None) -> None:
+        assert isinstance(value, tuple)
         self.y, self.x = value
 
     @property
