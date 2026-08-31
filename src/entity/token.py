@@ -88,7 +88,6 @@ class Token(BaseModel, ABC):
             case Mvt.RIGHT: return self.current_cell.east
             case _: return False
 
-
     # [Properties]
     @property
     def coordinates(self) -> tuple[float, float]:
