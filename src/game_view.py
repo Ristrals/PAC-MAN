@@ -39,7 +39,7 @@ class GameView(arcade.View):
         )
         self.grid.place_items(self.config.pacgum)
         from src.entity.pacman import Pacman
-        center_cell = self.grid.get_cell(self.grid.width // 2, self.grid.height // 2)
+        center_cell = self.grid.get_cell(self.grid.height // 2, self.grid.width // 2)
         self.pacman = Pacman(
             y=center_cell.y + 0.5,
             x=center_cell.x + 0.5,
