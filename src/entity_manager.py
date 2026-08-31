@@ -77,7 +77,7 @@ class EntityManager:
                 ghost.state = ghost_state
                 ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
-    def _place_tokens(self) -> None:
+    def _initialize_tokens(self) -> None:
         pacman_pos: Cell = self.grid.get_cell(self.grid.width//2, self.grid.height//2)
         ghosts_pos: list[Cell] = [
             self.grid.get_cell(0, 0),
