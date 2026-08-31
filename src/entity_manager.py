@@ -5,7 +5,7 @@ from math import dist
 from src import entity as ent
 from src.config import GameConfig
 from src.grid.grid_loader import Grid
-from src.grid.cell import StateType as St
+from src.grid.cell import StateType as St, Cell
 
 
 @dataclass
@@ -17,22 +17,13 @@ class FrameSummary:
 
 
 # TO DO:
-# /!\ PROPER WAY TO RECOVER TOKEN POSITIONS/CELLS/GRID FROM GRIDLOADER NEEDED
+# SPEED MODIFIER: base speed shoud be 11.0 per default
 class EntityManager:
-    def __init__(self, config: GameConfig, grid: Grid) -> None:
-        self.config: GameConfig = config
+    def __init__(self, grid: Grid, base_speed: float) -> None:
         self.grid: Grid = grid
-        self.pacman: ent.Pacman = ent.Pacman(y=,x=,current_cell=,speed=)
-        self.ghosts: list[ent.Ghost] = [
-            ent.Blinky(y=, x=, current_cell=, speed=,
-                       target_coord=self.pacman.coordinates, scatter_coord=),
-            ent.Pinky(y=, x=, current_cell=, speed=,
-                      target_coord=self.pacman.coordinates, scatter_coord=),
-            ent.Inky(y=, x=, current_cell=, speed=,
-                     target_coord=self.pacman.coordinates, scatter_coord=),
-            ent.Clyde(y=, x=, current_cell=, speed=,
-                      target_coord=self.pacman.coordinates, scatter_coord=),
-        ]
+        self.base_speed: float = base_speed
+        self._place_tokens()
+
 
     def update(self, delta_time: float) -> FrameSummary:
         summary = FrameSummary()
@@ -86,10 +77,32 @@ class EntityManager:
     def set_ghost_speeds(self, speed: float) ->None:
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
-                ghost.speed = speed
+                ghost.speed = speed * self.base_speed
 
     # Adjust all ghost states
     def set_ghost_states(self, ghost_state: ent.Gs) -> None:
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
                 ghost.state = ghost_state
+
+    def _place_tokens(self) -> None:
+        pacman_pos: Cell = self.grid.get_cell(self.grid.width//2, self.grid.height//2)
+        ghosts_pos: list[Cell] = [
+            self.grid.get_cell(0, 0),
+            self.grid.get_cell(0, self.grid.width - 1 ),
+            self.grid.get_cell(self.grid.width - 1, self.grid.height - 1),
+            self.grid.get_cell(self.grid.height - 1, 0)
+        ]
+
+        self.pacman: ent.Pacman = ent.Pacman(y=pacman_pos.y, x=pacman_pos.x,
+                                             current_cell=pacman_pos, speed=(0.80 * self.base_speed))
+        self.ghosts: list[ent.Ghost] = [
+            ent.Blinky(y=ghosts_pos[0].y, x=ghosts_pos[0].x, current_cell=ghosts_pos[0],
+                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[0].y, ghosts_pos[0].x)),
+            ent.Pinky(y=ghosts_pos[1].y, x=ghosts_pos[1].x, current_cell=ghosts_pos[1],
+                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[1].y, ghosts_pos[1].x)),
+            ent.Inky(y=ghosts_pos[2].y, x=ghosts_pos[2].x, current_cell=ghosts_pos[2],
+                     target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[2].y, ghosts_pos[2].x)),
+            ent.Clyde(y=ghosts_pos[3].y, x=ghosts_pos[3].x, current_cell=ghosts_pos[3],
+                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y, ghosts_pos[3].x)),
+        ]
