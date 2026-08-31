@@ -30,7 +30,7 @@ class Grid:
             grid.append(row_cells)
         self.grid = grid
 
-    def get_cell(self, x, y) -> Cell:
+    def get_cell(self, y, x) -> Cell:
         return self.grid[y][x]
 
     def place_items(self, pacgum_count: int) -> None:
