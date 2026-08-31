@@ -39,7 +39,7 @@ class GameView(arcade.View):
             seed
         )
         self.grid.place_items(self.config.pacgum)
-        self.entity_manager = EntityManager(self.grid)
+        self.entity_manager = EntityManager(self.grid, base_speed=3.0)
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
 
@@ -54,7 +54,7 @@ class GameView(arcade.View):
         self.clear()
         self.draw_maze()
         self.draw_items()
-        self.draw_pacman()
+        self.draw_token()
         self.draw_hud()
         self.draw_page()
         if self.pause:
@@ -134,15 +134,31 @@ class GameView(arcade.View):
                         arcade.color.YELLOW
                     )
 
-    def draw_pacman(self):
-        px = self.offset_x + self.pacman.x * self.cell_size
-        py = self.offset_y + (self.grid.height - 1 - self.pacman.y) * self.cell_size
+    def draw_token(self):
+        pacman = self.entity_manager.pacman
+        px = self.offset_x + pacman.x * self.cell_size
+        py = self.offset_y + (self.grid.height - pacman.y) * self.cell_size
         arcade.draw_circle_filled(
             px,
             py,
             self.cell_size * 0.4,
             arcade.color.YELLOW
         )
+        colors = [
+            arcade.color.RED,  # Blinky
+            arcade.color.ROSE,  # Pinky
+            arcade.color.CYAN,  # Inky
+            arcade.color.ORANGE  # Clyde
+        ]
+        for i, ghost in enumerate(self.entity_manager.ghosts):
+            px = self.offset_x + ghost.x * self.cell_size
+            py = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
+            arcade.draw_circle_filled(
+                px,
+                py,
+                self.cell_size * 0.4,
+                colors[i]
+            )
 
     def draw_cheat_panel(self):
         arcade.draw_lbwh_rectangle_filled(
@@ -309,27 +325,29 @@ class GameView(arcade.View):
 
         # pacman move
         if key == arcade.key.UP:
-            self.pacman.buffered_direction = Movements.UP
+            self.entity_manager.pacman.buffered_direction = Movements.UP
         elif key == arcade.key.DOWN:
-            self.pacman.buffered_direction = Movements.DOWN
+            self.entity_manager.pacman.buffered_direction = Movements.DOWN
         elif key == arcade.key.LEFT:
-            self.pacman.buffered_direction = Movements.LEFT
+            self.entity_manager.pacman.buffered_direction = Movements.LEFT
         elif key == arcade.key.RIGHT:
-            self.pacman.buffered_direction = Movements.RIGHT
+            self.entity_manager.pacman.buffered_direction = Movements.RIGHT
 
     def on_update(self, delta_time):
-        if not self.pause:
-            self.time_left -= delta_time
-            if self.time_left <= 0 or self.lives <= 0:
-                self.window.show_view(EndView(self.score, self.config, False))
-            if self.current_level > len(self.config.levels):
-                self.window.show_view(EndView(self.score, self.config, True))
-
-        self.pacman.move(delta_time, self.grid)
-        if self.pacman.is_cell_centered():
-            if self.pacman.current_cell.state_type == StateType.PACGUM:
-                self.pacman.current_cell.state_type = StateType.EMPTY
-                self.score += self.config.points_per_pacgum
+        if self.pause:
+            return
+        self.time_left -= delta_time
+        summary = self.entity_manager.update(delta_time)
+        if summary.eat_pacgum:
+            self.score += self.config.points_per_pacgum
+        if summary.eat_superpacgum:
+            self.score += self.config.points_per_super_pacgum
+        if summary.defeated:
+            self.lives -= 1
+        if self.time_left <= 0 or self.lives <= 0:
+            self.window.show_view(EndView(self.score, self.config, False))
+        if self.current_level > len(self.config.levels):
+            self.window.show_view(EndView(self.score, self.config, True))
 
 
 if __name__ == "__main__":

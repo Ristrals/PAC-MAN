@@ -4,6 +4,8 @@ from enum import Enum
 from src.entity.token import Token
 from src import behavior as bhvr
 
+from pydantic import ConfigDict
+
 
 # Ghost states
 class GhostState(Enum):
@@ -18,9 +20,11 @@ class GhostState(Enum):
     def get_speed_ratio(self) -> float:
         return self.value[1]
 
+
 # General Ghost class
 class Ghost(Token):
     state: GhostState | None = None
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0
     scatter_ai: bhvr.ScatterBehavior = bhvr.ScatterBehavior()
