@@ -7,10 +7,10 @@ from src import behavior as bhvr
 
 # Ghost states
 class GhostState(Enum):
-    CHASE = 0
-    SCATTER = 1
-    FRIGHTENED = 2
-    EATEN = 3
+    CHASE = ("chase", 0.75)
+    SCATTER = ("scatter", 0.75)
+    FRIGHTENED = ("frightened", 0.5)
+    EATEN = ("eaten", 1.80)
 
 
 # General Ghost class
