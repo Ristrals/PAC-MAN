@@ -3,7 +3,6 @@
 from dataclasses import dataclass, field
 from math import dist
 from src import entity as ent
-from src.config import GameConfig
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
 
@@ -22,7 +21,6 @@ class EntityManager:
         self.grid: Grid = grid
         self.base_speed: float = base_speed
         self._place_tokens()
-
 
     def update(self, delta_time: float) -> FrameSummary:
         summary = FrameSummary()
@@ -73,7 +71,7 @@ class EntityManager:
             ghost.coordinates = ghost.init_coord
 
     # Adjust all ghost speeds
-    def set_ghost_speeds(self, speed: float) ->None:
+    def set_ghost_speeds(self, speed: float) -> None:
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
                 ghost.speed = speed * self.base_speed
@@ -88,7 +86,7 @@ class EntityManager:
         pacman_pos: Cell = self.grid.get_cell(self.grid.width//2, self.grid.height//2)
         ghosts_pos: list[Cell] = [
             self.grid.get_cell(0, 0),
-            self.grid.get_cell(0, self.grid.width - 1 ),
+            self.grid.get_cell(0, self.grid.width - 1),
             self.grid.get_cell(self.grid.width - 1, self.grid.height - 1),
             self.grid.get_cell(self.grid.height - 1, 0)
         ]
