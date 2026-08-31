@@ -3,6 +3,7 @@ from src.grid.grid_loader import Grid
 from src.grid.cell import StateType
 from src.end_view import EndView
 from src.data_lib import Movements
+from src.entity_manager import EntityManager
 
 import arcade
 
@@ -38,15 +39,7 @@ class GameView(arcade.View):
             seed
         )
         self.grid.place_items(self.config.pacgum)
-        from src.entity.pacman import Pacman
-        center_cell = self.grid.get_cell(self.grid.height // 2, self.grid.width // 2)
-        self.pacman = Pacman(
-            y=center_cell.y + 0.5,
-            x=center_cell.x + 0.5,
-            current_cell=center_cell,
-            speed=4.0,
-            active=True
-        )
+        self.entity_manager = EntityManager(self.grid)
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
 
