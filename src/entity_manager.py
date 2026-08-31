@@ -20,7 +20,7 @@ class EntityManager:
     def __init__(self, grid: Grid, base_speed: float = 11.0) -> None:
         self.grid: Grid = grid
         self.base_speed: float = base_speed
-        self._place_tokens()
+        self._initialize_tokens()
 
     def update(self, delta_time: float) -> FrameSummary:
         summary = FrameSummary()
