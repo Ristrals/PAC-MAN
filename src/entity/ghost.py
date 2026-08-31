@@ -12,10 +12,15 @@ class GhostState(Enum):
     FRIGHTENED = ("frightened", 0.5)
     EATEN = ("eaten", 1.80)
 
+    def get_state(self) -> str:
+        return self.value[0]
+
+    def get_speed_ratio(self) -> float:
+        return self.value[1]
 
 # General Ghost class
 class Ghost(Token):
-    state: GhostState = GhostState.SCATTER
+    state: GhostState | None = None
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0
     scatter_ai: bhvr.ScatterBehavior = bhvr.ScatterBehavior()

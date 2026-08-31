@@ -70,17 +70,12 @@ class EntityManager:
         for ghost in self.ghosts:
             ghost.coordinates = ghost.init_coord
 
-    # Adjust all ghost speeds
-    def set_ghost_speeds(self, speed: float) -> None:
-        for ghost in self.ghosts:
-            if ghost.state != ent.Gs.EATEN:
-                ghost.speed = speed * self.base_speed
-
-    # Adjust all ghost states
+    # Adjust all ghost states and speed
     def set_ghost_states(self, ghost_state: ent.Gs) -> None:
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
                 ghost.state = ghost_state
+                ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
     def _place_tokens(self) -> None:
         pacman_pos: Cell = self.grid.get_cell(self.grid.width//2, self.grid.height//2)
@@ -91,8 +86,11 @@ class EntityManager:
             self.grid.get_cell(self.grid.height - 1, 0)
         ]
 
+        # Placing Pacman
         self.pacman: ent.Pacman = ent.Pacman(y=pacman_pos.y, x=pacman_pos.x,
                                              current_cell=pacman_pos, speed=(0.80 * self.base_speed))
+
+        # Placing and setting ghosts to Scatter mode
         self.ghosts: list[ent.Ghost] = [
             ent.Blinky(y=ghosts_pos[0].y, x=ghosts_pos[0].x, current_cell=ghosts_pos[0],
                        target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[0].y, ghosts_pos[0].x)),
@@ -103,3 +101,4 @@ class EntityManager:
             ent.Clyde(y=ghosts_pos[3].y, x=ghosts_pos[3].x, current_cell=ghosts_pos[3],
                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y, ghosts_pos[3].x)),
         ]
+        self.set_ghost_states(ent.Gs.SCATTER)
