@@ -4,6 +4,8 @@ from enum import Enum
 from src.entity.token import Token
 from src import behavior as bhvr
 
+from pydantic import ConfigDict
+
 
 # Ghost states
 class GhostState(Enum):
@@ -15,6 +17,7 @@ class GhostState(Enum):
 
 # General Ghost class
 class Ghost(Token):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     state: GhostState = GhostState.SCATTER
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0

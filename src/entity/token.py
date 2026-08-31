@@ -15,7 +15,7 @@ class Token(BaseModel, ABC):
     current_cell: Cell
     direction: Mvt | None = None
     buffered_direction: Mvt | None = None
-    active: bool = False
+    active: bool = True
 
     # Initial position in case of reset
     init_coord: tuple[float, float] | None = None
@@ -25,7 +25,7 @@ class Token(BaseModel, ABC):
     @model_validator(mode="after")
     def _set_initial_position(self) -> 'Token':
         if self.init_coord is None:
-            self.init_cood = (self.y, self.x)
+            self.init_coord = (self.y, self.x)
         if self.init_cell is None:
             self.init_cell = self.current_cell
         return self

@@ -17,7 +17,7 @@ class FrameSummary:
 
 # TO DO:
 class EntityManager:
-    def __init__(self, grid: Grid, base_speed: float = 11.0) -> None:
+    def __init__(self, grid: Grid, base_speed: float = 3.0) -> None:
         self.grid: Grid = grid
         self.base_speed: float = base_speed
         self._place_tokens()
@@ -42,7 +42,7 @@ class EntityManager:
                         if ghost.state != ent.Gs.EATEN:
                             ghost.state = ent.Gs.FRIGHTENED
                     self.pacman.current_cell.state_type = St.EMPTY
-        
+
         # Solve collisions
         for ghost in self.ghosts:
             if dist(ghost.coordinates, self.pacman.coordinates) < 0.5:
@@ -83,7 +83,7 @@ class EntityManager:
                 ghost.state = ghost_state
 
     def _place_tokens(self) -> None:
-        pacman_pos: Cell = self.grid.get_cell(self.grid.width//2, self.grid.height//2)
+        pacman_pos: Cell = self.grid.get_cell(self.grid.height//2, self.grid.width//2)
         ghosts_pos: list[Cell] = [
             self.grid.get_cell(0, 0),
             self.grid.get_cell(0, self.grid.width - 1),
@@ -91,15 +91,15 @@ class EntityManager:
             self.grid.get_cell(self.grid.height - 1, 0)
         ]
 
-        self.pacman: ent.Pacman = ent.Pacman(y=pacman_pos.y, x=pacman_pos.x,
+        self.pacman: ent.Pacman = ent.Pacman(y=pacman_pos.y + 0.5, x=pacman_pos.x + 0.5,
                                              current_cell=pacman_pos, speed=(0.80 * self.base_speed))
         self.ghosts: list[ent.Ghost] = [
-            ent.Blinky(y=ghosts_pos[0].y, x=ghosts_pos[0].x, current_cell=ghosts_pos[0],
+            ent.Blinky(y=ghosts_pos[0].y + 0.5, x=ghosts_pos[0].x + 0.5, current_cell=ghosts_pos[0],
                        target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[0].y, ghosts_pos[0].x)),
-            ent.Pinky(y=ghosts_pos[1].y, x=ghosts_pos[1].x, current_cell=ghosts_pos[1],
+            ent.Pinky(y=ghosts_pos[1].y + 0.5, x=ghosts_pos[1].x + 0.5, current_cell=ghosts_pos[1],
                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[1].y, ghosts_pos[1].x)),
-            ent.Inky(y=ghosts_pos[2].y, x=ghosts_pos[2].x, current_cell=ghosts_pos[2],
+            ent.Inky(y=ghosts_pos[2].y + 0.5, x=ghosts_pos[2].x + 0.5, current_cell=ghosts_pos[2],
                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[2].y, ghosts_pos[2].x)),
-            ent.Clyde(y=ghosts_pos[3].y, x=ghosts_pos[3].x, current_cell=ghosts_pos[3],
+            ent.Clyde(y=ghosts_pos[3].y + 0.5, x=ghosts_pos[3].x + 0.5, current_cell=ghosts_pos[3],
                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y, ghosts_pos[3].x)),
         ]
