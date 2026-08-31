@@ -17,9 +17,8 @@ class FrameSummary:
 
 
 # TO DO:
-# SPEED MODIFIER: base speed shoud be 11.0 per default
 class EntityManager:
-    def __init__(self, grid: Grid, base_speed: float) -> None:
+    def __init__(self, grid: Grid, base_speed: float = 11.0) -> None:
         self.grid: Grid = grid
         self.base_speed: float = base_speed
         self._place_tokens()
