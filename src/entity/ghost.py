@@ -9,20 +9,26 @@ from pydantic import ConfigDict
 
 # Ghost states
 class GhostState(Enum):
-    CHASE = ("chase", 0.75)
-    SCATTER = ("scatter", 0.75)
-    FRIGHTENED = ("frightened", 0.5)
-    EATEN = ("eaten", 1.80)
+    CHASE = ("chase", 0.75, None)
+    SCATTER = ("scatter", 0.75, bhvr.ScatterBehavior())
+    FRIGHTENED = ("frightened", 0.5, bhvr.FrightenBehavior())
+    EATEN = ("eaten", 1.80, bhvr.EatenBehavior())
 
+    def get_state(self) -> str:
+        return self.value[0]
+
+    def get_speed_ratio(self) -> float:
+        return self.value[1]
+
+    def get_behavior(self) -> bhvr.GhostBehavior | None:
+        return self.value[2]
 
 # General Ghost class
 class Ghost(Token):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
     state: GhostState = GhostState.SCATTER
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0
-    scatter_ai: bhvr.ScatterBehavior = bhvr.ScatterBehavior()
-    frighten_ai: bhvr.FrightenBehavior = bhvr.FrightenBehavior()
+    current_ai: bhvr.GhostBehavior | None = None
 
 
 # Red ghost
