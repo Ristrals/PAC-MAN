@@ -42,8 +42,8 @@ class Grid:
             (self.width - 1, self.height - 1)
         ]
         for x, y in corners:
-            self.get_cell(x, y).state_type = StateType.SUPER_PACGUM
-        maze_center = self.get_cell(self.width // 2, self.height // 2)
+            self.get_cell(y, x).state_type = StateType.SUPER_PACGUM
+        maze_center = self.get_cell(self.height // 2, self.width // 2)
         available = []
         for row in self.grid:
             for cell in row:

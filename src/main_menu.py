@@ -120,8 +120,11 @@ class MainMenuView(arcade.View):
             self.selected = 1
         elif key == arcade.key.ENTER:
             if self.selected == 0:
-                game_view = GameView(self.config)
-                self.window.show_view(game_view)
+                try:
+                    game_view = GameView(self.config)
+                    self.window.show_view(game_view)
+                except Exception as e:
+                    print(e)
             elif self.selected == 1:
                 arcade.close_window()
         elif key == arcade.key.ESCAPE:
