@@ -3,7 +3,6 @@
 from enum import Enum
 from src.entity.token import Token
 from src import behavior as bhvr
-
 from pydantic import ConfigDict
 
 
