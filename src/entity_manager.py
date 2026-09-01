@@ -93,15 +93,11 @@ class EntityManager:
         # Placing and setting ghosts to Scatter mode
         self.ghosts: list[ent.Ghost] = [
             ent.Blinky(y=ghosts_pos[0].y + 0.5, x=ghosts_pos[0].x + 0.5, current_cell=ghosts_pos[0],
-            ent.Blinky(y=ghosts_pos[0].y + 0.5, x=ghosts_pos[0].x + 0.5, current_cell=ghosts_pos[0],
                        target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[0].y, ghosts_pos[0].x)),
-            ent.Pinky(y=ghosts_pos[1].y + 0.5, x=ghosts_pos[1].x + 0.5, current_cell=ghosts_pos[1],
             ent.Pinky(y=ghosts_pos[1].y + 0.5, x=ghosts_pos[1].x + 0.5, current_cell=ghosts_pos[1],
                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[1].y, ghosts_pos[1].x)),
             ent.Inky(y=ghosts_pos[2].y + 0.5, x=ghosts_pos[2].x + 0.5, current_cell=ghosts_pos[2],
-            ent.Inky(y=ghosts_pos[2].y + 0.5, x=ghosts_pos[2].x + 0.5, current_cell=ghosts_pos[2],
                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[2].y, ghosts_pos[2].x)),
-            ent.Clyde(y=ghosts_pos[3].y + 0.5, x=ghosts_pos[3].x + 0.5, current_cell=ghosts_pos[3],
             ent.Clyde(y=ghosts_pos[3].y + 0.5, x=ghosts_pos[3].x + 0.5, current_cell=ghosts_pos[3],
                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y, ghosts_pos[3].x)),
         ]
