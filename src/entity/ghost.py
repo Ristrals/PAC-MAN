@@ -25,8 +25,8 @@ class GhostState(Enum):
 
 # General Ghost class
 class Ghost(Token):
-    state: GhostState | None = None
     model_config = ConfigDict(arbitrary_types_allowed=True)
+    state: GhostState | None = None
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0
     current_ai: bhvr.GhostBehavior | None = None
