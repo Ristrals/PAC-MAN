@@ -4,6 +4,7 @@ from src.grid.cell import StateType
 from src.end_view import EndView
 from src.data_lib import Movements
 from src.entity_manager import EntityManager
+from src import entity
 
 import arcade
 
@@ -39,7 +40,7 @@ class GameView(arcade.View):
             seed
         )
         self.grid.place_items(self.config.pacgum)
-        self.entity_manager = EntityManager(self.grid, base_speed=3.0)
+        self.entity_manager = EntityManager(self.grid, base_speed=5.0)
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
 
@@ -186,15 +187,6 @@ class GameView(arcade.View):
             )
 
     def draw_hud(self):
-        '''
-        arcade.draw_lbwh_rectangle_filled(
-            0,
-            self.window.height - 40,
-            self.window.width,
-            self.window.height,
-            arcade.color.ORANGE
-        )
-        '''
         arcade.draw_text(
             "❤️" * self.lives,
             self.window.width / 10,
@@ -344,7 +336,14 @@ class GameView(arcade.View):
             self.score += self.config.points_per_super_pacgum
         if summary.defeated:
             self.lives -= 1
-        if self.time_left <= 0 or self.lives <= 0:
+            if self.lives <= 0:
+                self.window.show_view(EndView(self.score, self.config, False))
+                return
+            self.entity_manager.reset_positions()
+            self.entity_manager.pacman.active = True
+            self.entity_manager.pacman.direction = None
+            self.entity_manager.set_ghost_states(entity.Gs.SCATTER)
+        if self.time_left <= 0:
             self.window.show_view(EndView(self.score, self.config, False))
         if self.current_level > len(self.config.levels):
             self.window.show_view(EndView(self.score, self.config, True))
