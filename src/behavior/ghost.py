@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from math import dist
+from pydantic import BaseModel
 from src.data_lib import Movements as Mvt
 import src.entity as ent
 from src.grid.grid_loader import Grid
@@ -9,16 +10,13 @@ from src.grid.cell import Cell
 
 
 # Base ghost behavior class
-class GhostBehavior(ABC):
+class GhostBehavior(ABC, BaseModel):
     # Directions in sorted by priority
     _DIRECTION_PRIORITY = [Mvt.UP, Mvt.LEFT, Mvt.DOWN, Mvt.RIGHT]
-
-    # Init~
-    def __init__(self, ghost: ent.Ghost, pacman: ent.Pacman, blinky: ent.Ghost | None = None) -> None:
-        self.ghost: ent.Ghost = ghost
-        self.pacman: ent.Pacman = pacman
-        self.blinky: ent.Ghost | None = blinky
-        self.target: tuple[float, float] | None = None
+    ghost: ent.Ghost
+    pacman: ent.Pacman
+    blinky: ent.Ghost | None = None
+    target: tuple[float, float] | None = None
 
     @abstractmethod
     def get_target(self) -> tuple[float, float]:
