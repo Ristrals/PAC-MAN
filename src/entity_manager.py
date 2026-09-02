@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from math import dist
 from src import entity as ent
+from src.entity import pacman
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
 
@@ -44,16 +45,17 @@ class EntityManager:
                     self.pacman.current_cell.state_type = St.EMPTY
 
         # Solve collisions
-        for ghost in self.ghosts:
-            if dist(ghost.coordinates, self.pacman.coordinates) < 0.5:
-                match ghost.state:
-                    case ent.Gs.FRIGHTENED:
-                        summary.eaten_ghosts.append(ghost)
-                        ghost.state = ent.Gs.EATEN
-                    case ent.Gs.CHASE | ent.Gs.SCATTER:
-                        summary.defeated = True
-                        self.pacman.active = False
-                        break
+        if not self.pacman.is_invincible:
+            for ghost in self.ghosts:
+                if dist(ghost.coordinates, self.pacman.coordinates) < 0.5:
+                    match ghost.state:
+                        case ent.Gs.FRIGHTENED:
+                            summary.eaten_ghosts.append(ghost)
+                            ghost.state = ent.Gs.EATEN
+                        case ent.Gs.CHASE | ent.Gs.SCATTER:
+                            summary.defeated = True
+                            self.pacman.active = False
+                            break
 
         # Update ghost target coordinates
         for ghost in self.ghosts:
