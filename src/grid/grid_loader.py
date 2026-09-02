@@ -61,6 +61,13 @@ class Grid:
         for cell in selected:
             cell.state_type = StateType.PACGUM
 
+    def is_all_empty(self) -> bool:
+        for row in self.grid:
+            for cell in row:
+                if cell.state_type != StateType.EMPTY:
+                    return False
+        return True
+
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
