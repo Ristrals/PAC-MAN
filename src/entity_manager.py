@@ -93,14 +93,17 @@ class EntityManager:
                                              current_cell=pacman_pos, speed=(0.80 * self.base_speed))
 
         # Placing and setting ghosts to Scatter mode
-        self.ghosts: list[ent.Ghost] = [
-            ent.Blinky(y=ghosts_pos[0].y + 0.5, x=ghosts_pos[0].x + 0.5, current_cell=ghosts_pos[0],
-                       target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[0].y, ghosts_pos[0].x)),
-            ent.Pinky(y=ghosts_pos[1].y + 0.5, x=ghosts_pos[1].x + 0.5, current_cell=ghosts_pos[1],
-                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[1].y, ghosts_pos[1].x)),
-            ent.Inky(y=ghosts_pos[2].y + 0.5, x=ghosts_pos[2].x + 0.5, current_cell=ghosts_pos[2],
-                     target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[2].y, ghosts_pos[2].x)),
-            ent.Clyde(y=ghosts_pos[3].y + 0.5, x=ghosts_pos[3].x + 0.5, current_cell=ghosts_pos[3],
-                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y, ghosts_pos[3].x)),
-        ]
+        blinky = ent.Blinky(y=ghosts_pos[0].y + 0.5, x=ghosts_pos[0].x + 0.5, current_cell=ghosts_pos[0],
+                            target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[0].y, ghosts_pos[0].x),
+                            pacman=self.pacman)
+        pinky = ent.Pinky(y=ghosts_pos[1].y + 0.5, x=ghosts_pos[1].x + 0.5, current_cell=ghosts_pos[1],
+                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[1].y, ghosts_pos[1].x),
+                      pacman=self.pacman)
+        inky = ent.Inky(y=ghosts_pos[2].y + 0.5, x=ghosts_pos[2].x + 0.5, current_cell=ghosts_pos[2],
+                     target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[2].y, ghosts_pos[2].x),
+                     pacman=self.pacman, blinky=blinky)
+        clyde = ent.Clyde(y=ghosts_pos[3].y + 0.5, x=ghosts_pos[3].x + 0.5, current_cell=ghosts_pos[3],
+                      target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y, ghosts_pos[3].x),
+                      pacman=self.pacman)
+        self.ghosts: tuple[ent.Blinky, ent.Pinky, ent.Inky, ent.Clyde] = (blinky, pinky, inky, clyde)
         self.set_ghost_states(ent.Gs.SCATTER)
