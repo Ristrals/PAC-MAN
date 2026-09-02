@@ -306,6 +306,7 @@ class GameView(arcade.View):
         if self.cheat_mode:
             if key == arcade.key.I:
                 self.invincible = not self.invincible
+                self.entity_manager.pacman.is_invincible = self.invincible
             elif key == arcade.key.N:
                 if self.current_level < len(self.config.levels):
                     self.next_level()
