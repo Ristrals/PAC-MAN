@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from src.data_lib import Movements as Mvt
 from enum import Enum
 
 
@@ -22,6 +23,14 @@ class Cell:
     def coordinates(self) -> tuple[int, int]:
         return self.y, self.x
 
+    # Return if the cell be exited in gived direction
+    def can_exit(self, direction: Mvt | None) -> bool:
+        match direction:
+            case Mvt.UP: return self.north
+            case Mvt.DOWN: return self.south
+            case Mvt.LEFT: return self.west
+            case Mvt.RIGHT: return self.east
+            case _: return False
 
 def create_cell(x, y, value) -> Cell:
     return Cell(

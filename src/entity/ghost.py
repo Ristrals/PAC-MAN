@@ -28,28 +28,28 @@ class Ghost(Token):
     state: GhostState | None = None
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0
-    current_ai: bhvr.GhostBehavior | None = None
+    current_bhvr: bhvr.GhostBehavior | None = None
 
 
 # Red ghost
 class Blinky(Ghost):
-    ghost_ai: bhvr.BlinkyBehavior = bhvr.BlinkyBehavior()
+    ghost_specific_bhvr: bhvr.BlinkyBehavior = bhvr.BlinkyBehavior()
     pass
 
 
 # Pink ghost
 class Pinky(Ghost):
-    ghost_ai: bhvr.PinkyBehavior = bhvr.PinkyBehavior()
+    ghost_specific_bhvr: bhvr.PinkyBehavior = bhvr.PinkyBehavior()
     pass
 
 
 # Cyan ghost
 class Inky(Ghost):
-    ghost_ai: bhvr.InkyBehavior = bhvr.InkyBehavior()
+    ghost_specific_bhvr: bhvr.InkyBehavior = bhvr.InkyBehavior()
     pass
 
 
 # Orange ghost
 class Clyde(Ghost):
-    ghost_ai: bhvr.ClydeBehavior = bhvr.ClydeBehavior()
+    ghost_specific_bhvr: bhvr.ClydeBehavior = bhvr.ClydeBehavior()
     pass

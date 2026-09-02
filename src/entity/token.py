@@ -49,10 +49,10 @@ class Token(BaseModel, ABC):
 
         if self.buffered_direction:
             if self.direction is None or self.buffered_direction == self.direction.opposite:
-                if self._can_move(self.buffered_direction):
+                if self.can_move(self.buffered_direction):
                     self.direction = self.buffered_direction
                     self.buffered_direction = None
-            elif at_center and self._can_move(self.buffered_direction):
+            elif at_center and self.can_move(self.buffered_direction):
                 self.direction = self.buffered_direction
                 self.y, self.x = cy + 0.5, cx + 0.5
                 self.buffered_direction = None
@@ -60,7 +60,7 @@ class Token(BaseModel, ABC):
         if self.direction is None:
             return
 
-        if not self._can_move(self.direction) and at_center:
+        if not self.can_move(self.direction) and at_center:
             self.y, self.x = cy + 0.5, cx + 0.5
             return
 
@@ -80,7 +80,7 @@ class Token(BaseModel, ABC):
         return False
 
     # Return if the entity is allowed to move in current direction
-    def _can_move(self, direction: Mvt | None) -> bool:
+    def can_move(self, direction: Mvt | None) -> bool:
         match direction:
             case Mvt.UP: return self.current_cell.north
             case Mvt.DOWN: return self.current_cell.south
