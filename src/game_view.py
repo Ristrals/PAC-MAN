@@ -347,10 +347,10 @@ class GameView(arcade.View):
             self.entity_manager.set_ghost_states(entity.Gs.SCATTER)
         if self.grid.is_all_empty():
             self.next_level()
+            if self.current_level > len(self.config.levels):
+                self.window.show_view(EndView(self.score, self.config, True))
         if self.time_left <= 0:
             self.window.show_view(EndView(self.score, self.config, False))
-        if self.current_level > len(self.config.levels):
-            self.window.show_view(EndView(self.score, self.config, True))
 
 
 if __name__ == "__main__":
