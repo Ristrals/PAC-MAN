@@ -6,6 +6,6 @@ from src.behavior.ghost import GhostBehavior as Gb
 # Chases Pacman when far away
 # Retreats to scatter corner if 8 tiles from the player
 class ClydeBehavior(Gb):
-    def get_target(self) -> tuple[float, float]:
+    def get_target(self) -> None:
         py, px = self.pacman.coordinates
-        return (float(int(py)) + 0.5), (float(int(px)) + 0.5)
+        self.target = (float(int(py)) + 0.5), (float(int(px)) + 0.5)

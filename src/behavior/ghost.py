@@ -19,7 +19,7 @@ class GhostBehavior(ABC, BaseModel):
     target: tuple[float, float] | None = None
 
     @abstractmethod
-    def get_target(self) -> tuple[float, float]:
+    def get_target(self) -> None:
         """Allow all ghost behaviors to recover their targeted cell"""
         pass
 

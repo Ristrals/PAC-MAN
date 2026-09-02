@@ -3,6 +3,7 @@
 from enum import Enum
 from src.entity.token import Token
 import src.entity as ent
+from src.grid.grid_loader import Grid
 from src import behavior as bhvr
 from pydantic import ConfigDict, model_validator
 
@@ -23,11 +24,12 @@ class GhostState(Enum):
 # General Ghost class
 class Ghost(Token):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    state: GhostState | None = None
+    state: GhostState | None = GhostState.SCATTER
     target_coord: tuple[float, float] = 0.0, 0.0
     scatter_coord: tuple[float, float] = 0.0, 0.0
     pacman: ent.Pacman
     current_bhvr: bhvr.GhostBehavior | None = None
+    ghost_specific_bhvr: bhvr.GhostBehavior | None = None
     scatter_bhvr: bhvr.ScatterBehavior | None = None
     frighten_bhvr: bhvr.FrightenBehavior | None = None
     eaten_bhvr: bhvr.EatenBehavior | None = None
@@ -39,10 +41,25 @@ class Ghost(Token):
         self.eaten_bhvr: bhvr.EatenBehavior = bhvr.EatenBehavior(ghost=self, pacman=self.pacman)
         return self
 
+    def update_buffered_direction(self, grid: Grid) -> None:
+        """Delegates direction evaluation directly to the active state strategy."""
+        match self.state:
+            case GhostState.CHASE:
+                self.current_bhvr = self.ghost_specific_bhvr
+            case GhostState.SCATTER:
+                self.current_bhvr = self.scatter_bhvr
+            case GhostState.FRIGHTENED:
+                self.current_bhvr = self.frighten_bhvr
+            case GhostState.EATEN:
+                self.current_bhvr = self.eaten_bhvr
+            case _:
+                self.current_bhvr = None
+        if self.current_bhvr:
+            self.current_bhvr.update_direction(grid)
+
 
 # Red ghost
 class Blinky(Ghost):
-    ghost_specific_bhvr: bhvr.GhostBehavior | None = None
     @model_validator(mode="after")
     def init_behaviors(self) -> 'Blinky':
         self.ghost_specific_bhvr: bhvr.BlinkyBehavior = bhvr.BlinkyBehavior(ghost=self, pacman=self.pacman)
@@ -51,7 +68,6 @@ class Blinky(Ghost):
 
 # Pink ghost
 class Pinky(Ghost):
-    ghost_specific_bhvr: bhvr.GhostBehavior | None = None
     @model_validator(mode="after")
     def init_behaviors(self) -> 'Pinky':
         self.ghost_specific_bhvr: bhvr.PinkyBehavior = bhvr.PinkyBehavior(ghost=self, pacman=self.pacman)
@@ -60,7 +76,6 @@ class Pinky(Ghost):
 
 # Cyan ghost
 class Inky(Ghost):
-    ghost_specific_bhvr: bhvr.GhostBehavior | None = None
     blinky: Ghost
     @model_validator(mode="after")
     def init_behaviors(self) -> 'Inky':
@@ -71,7 +86,6 @@ class Inky(Ghost):
 
 # Orange ghost
 class Clyde(Ghost):
-    ghost_specific_bhvr: bhvr.GhostBehavior | None = None
     @model_validator(mode="after")
     def init_behaviors(self) -> 'Clyde':
         self.ghost_specific_bhvr: bhvr.ClydeBehavior = bhvr.ClydeBehavior(ghost=self, pacman=self.pacman)
