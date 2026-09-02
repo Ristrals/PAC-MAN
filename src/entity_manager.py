@@ -29,6 +29,7 @@ class EntityManager:
         # All token move
         self.pacman.move(delta_time, self.grid)
         for ghost in self.ghosts:
+            ghost.update_buffered_direction(self.grid)
             ghost.move(delta_time, self.grid)
 
         # Check if pacman is centered on a pacgum cell
