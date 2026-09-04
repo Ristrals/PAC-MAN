@@ -102,4 +102,4 @@ class EntityManager:
             target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y + 0.5, ghosts_pos[3].x + 0.5),
             pacman=self.pacman)
         self.ghosts: tuple[ent.Blinky, ent.Pinky, ent.Inky, ent.Clyde] = (blinky, pinky, inky, clyde)
-        self.set_ghost_states(ent.Gs.SCATTER)
+        self.set_ghost_states(ent.Gs.CHASE)

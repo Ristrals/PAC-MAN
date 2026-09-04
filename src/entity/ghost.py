@@ -4,6 +4,7 @@ from enum import Enum
 from math import dist
 import random
 from abc import ABC, abstractmethod
+from traceback import walk_stack
 from typing import Callable, Any
 from pydantic import ConfigDict, Field, model_validator
 from src.data_lib import Movements as Mvt
@@ -28,12 +29,13 @@ class GhostState(Enum):
 
 class Ghost(Token, ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    state: GhostState | None = GhostState.SCATTER
+    state: GhostState | None = None
     target_coord: tuple[float, float] = (0.0, 0.0)
     scatter_coord: tuple[float, float] = (0.0, 0.0)
     grid: Grid
     pacman: ent.Pacman
     behaviors: dict[GhostState, Callable[..., Any]] = Field(default_factory=dict, exclude=True)
+    was_centered: bool = True  # Required for Ghost direction calculation
     _DIRECTION_PRIORITY: list[Mvt] = [Mvt.UP, Mvt.LEFT, Mvt.DOWN, Mvt.RIGHT]
 
     @model_validator(mode="after")
@@ -44,43 +46,102 @@ class Ghost(Token, ABC):
             GhostState.FRIGHTENED: self._frightened_behavior,
             GhostState.EATEN: self._eaten_behavior,
         }
+        for move in self._DIRECTION_PRIORITY:
+            if self.can_move(move):
+                self.direction = move
+                continue
         return self
+
+    def move(self, delta_time: float, grid: Grid) -> None:
+        if not self.active:
+            return
+
+        currently_centered = self.is_cell_centered()
+
+        # -----------------------------------------------------------------
+        # 1. ARRIVED AT CENTER (0.5): Apply buffered direction to turn
+        # -----------------------------------------------------------------
+        if currently_centered and not self.was_centered:
+            cy, cx = self.current_cell.coordinates
+
+            # If we have a buffered turn and can legally move in that direction
+            if self.buffered_direction and self.current_cell.can_exit(self.buffered_direction):
+                self.direction = self.buffered_direction
+
+                # Align perpendicular axis cleanly to center line
+                if self.direction in (Mvt.UP, Mvt.DOWN):
+                    self.x = cx + 0.5
+                else:
+                    self.y = cy + 0.5
+
+                self.buffered_direction = None
+
+        # -----------------------------------------------------------------
+        # 2. ADVANCE POSITION
+        # -----------------------------------------------------------------
+        if self.direction is not None and (self.current_cell.can_exit(self.direction) or not currently_centered):
+            speed_ratio = self.state.get_speed_ratio() if self.state else 1.0
+            effective_speed = self.speed * speed_ratio
+
+            dir_y, dir_x = self.direction.cell_offset
+            self.y += dir_y * effective_speed * delta_time
+            self.x += dir_x * effective_speed * delta_time
+
+            # Update current cell reference if crossed tile boundary
+            new_cy, new_cx = int(self.y), int(self.x)
+            if (new_cy, new_cx) != self.current_cell.coordinates:
+                self.current_cell = grid.get_cell(new_cy, new_cx)
+
+        # -----------------------------------------------------------------
+        # 3. EXITED CENTER (leaving 0.5): Calculate pathfinding for NEXT tile
+        # -----------------------------------------------------------------
+        if self.__class__.__name__ == "Blinky":
+            print(
+                f"{self.was_centered}"
+            )
+        if self.was_centered and not currently_centered:
+            self.update_buffered_direction()
+
+        # Update center state tracking flag for the next tick
+        self.was_centered = currently_centered
 
     def update_buffered_direction(self) -> None:
         self._get_target()
         if not self.direction:
             return
 
-        upcoming_cell = Ghost._get_next_cell(self.grid, self.current_cell, self.direction)
-
-        if not upcoming_cell or not self.current_cell.can_exit(self.direction):
-            eval_cell = self.current_cell
-        else:
-            eval_cell = upcoming_cell
-
+        # Evaluate directions from the CURRENT cell the ghost is occupying
+        eval_cell = self.current_cell
         opposite_dir = self.direction.opposite
+
         best_dir: Mvt | None = None
         min_dist = float("inf")
         valid_directions: list[Mvt] = []
 
         for direction in self._DIRECTION_PRIORITY:
+            # 1. Ghosts CANNOT reverse direction (180° turn forbidden)
             if direction == opposite_dir:
                 continue
 
+            # 2. Check if eval_cell permits exit in this direction
             if eval_cell.can_exit(direction):
                 neighbor_cell = Ghost._get_next_cell(self.grid, eval_cell, direction)
                 if not neighbor_cell:
                     continue
 
                 valid_directions.append(direction)
+
+                # Distance calculated from center of destination cell to target
                 ny, nx = neighbor_cell.coordinates
                 distance = dist((ny + 0.5, nx + 0.5), self.target_coord)
+
                 if distance < min_dist:
                     min_dist = distance
                     best_dir = direction
 
         if self.state == GhostState.FRIGHTENED:
-            self.buffered_direction = random.choice(valid_directions) if valid_directions else opposite_dir
+            if valid_directions:
+                self.buffered_direction = random.choice(valid_directions)
             return
 
         if best_dir is not None:

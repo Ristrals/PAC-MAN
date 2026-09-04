@@ -1,6 +1,6 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from math import isclose
 from pydantic import BaseModel, model_validator
 from src.data_lib import Movements as Mvt
@@ -40,36 +40,10 @@ class Token(BaseModel, ABC):
         self.current_cell = self.init_cell
 
     # Movement
+    @abstractmethod
     def move(self, delta_time: float, grid: Grid) -> None:
-        if not self.active:
-            return
-
-        cy, cx = self.current_cell.coordinates
-        at_center = self.is_cell_centered()
-
-        if self.buffered_direction:
-            if self.direction is None or self.buffered_direction == self.direction.opposite:
-                if self.can_move(self.buffered_direction):
-                    self.direction = self.buffered_direction
-                    self.buffered_direction = None
-            elif at_center and self.can_move(self.buffered_direction):
-                self.direction = self.buffered_direction
-                self.y, self.x = cy + 0.5, cx + 0.5
-                self.buffered_direction = None
-
-        if self.direction is None:
-            return
-
-        if not self.can_move(self.direction) and at_center:
-            return
-
-        dir_y, dir_x = self.direction.cell_offset
-        self.y += dir_y * self.speed * delta_time
-        self.x += dir_x * self.speed * delta_time
-
-        new_cy, new_cx = int(self.y), int(self.x)
-        if (new_cy, new_cx) != (cy, cx):
-            self.current_cell = grid.get_cell(new_cy, new_cx)
+        """Move method respective to Pacman or Ghosts"""
+        pass
 
     # Check if token is at cell center
     def is_cell_centered(self) -> bool:
