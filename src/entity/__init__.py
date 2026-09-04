@@ -7,6 +7,7 @@ from src.entity.pinky import Pinky
 from src.entity.inky import Inky
 from src.entity.clyde import Clyde
 
+#TEST
 
 __all__ = [
     "Pacman",
