@@ -61,7 +61,6 @@ class Token(BaseModel, ABC):
             return
 
         if not self.can_move(self.direction) and at_center:
-            self.y, self.x = cy + 0.5, cx + 0.5
             return
 
         dir_y, dir_x = self.direction.cell_offset

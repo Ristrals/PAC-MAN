@@ -1,14 +1,18 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
 from enum import Enum
+from math import dist
+import random
+from abc import ABC, abstractmethod
+from typing import Callable, Any
+from pydantic import ConfigDict, Field, model_validator
+from src.data_lib import Movements as Mvt
 from src.entity.token import Token
-import src.entity as ent
+from src.grid.cell import Cell
 from src.grid.grid_loader import Grid
-from src import behavior as bhvr
-from pydantic import ConfigDict, model_validator
+import src.entity as ent
 
 
-# Ghost states
 class GhostState(Enum):
     CHASE = ("chase", 0.75)
     SCATTER = ("scatter", 0.75)
@@ -21,72 +25,93 @@ class GhostState(Enum):
     def get_speed_ratio(self) -> float:
         return self.value[1]
 
-# General Ghost class
-class Ghost(Token):
+
+class Ghost(Token, ABC):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     state: GhostState | None = GhostState.SCATTER
-    target_coord: tuple[float, float] = 0.0, 0.0
-    scatter_coord: tuple[float, float] = 0.0, 0.0
+    target_coord: tuple[float, float] = (0.0, 0.0)
+    scatter_coord: tuple[float, float] = (0.0, 0.0)
+    grid: Grid
     pacman: ent.Pacman
-    current_bhvr: bhvr.GhostBehavior | None = None
-    ghost_specific_bhvr: bhvr.GhostBehavior | None = None
-    scatter_bhvr: bhvr.ScatterBehavior | None = None
-    frighten_bhvr: bhvr.FrightenBehavior | None = None
-    eaten_bhvr: bhvr.EatenBehavior | None = None
+    behaviors: dict[GhostState, Callable[..., Any]] = Field(default_factory=dict, exclude=True)
+    _DIRECTION_PRIORITY: list[Mvt] = [Mvt.UP, Mvt.LEFT, Mvt.DOWN, Mvt.RIGHT]
 
     @model_validator(mode="after")
-    def init_behaviors(self) -> 'Ghost':
-        self.scatter_bhvr: bhvr.ScatterBehavior = bhvr.ScatterBehavior(ghost=self, pacman=self.pacman)
-        self.frighten_bhvr: bhvr.FrightenBehavior = bhvr.FrightenBehavior(ghost=self, pacman=self.pacman)
-        self.eaten_bhvr: bhvr.EatenBehavior = bhvr.EatenBehavior(ghost=self, pacman=self.pacman)
+    def init_sequence(self) -> 'Ghost':
+        self.behaviors = {
+            GhostState.CHASE: self._chase_behavior,
+            GhostState.SCATTER: self._scatter_behavior,
+            GhostState.FRIGHTENED: self._frightened_behavior,
+            GhostState.EATEN: self._eaten_behavior,
+        }
         return self
 
-    def update_buffered_direction(self, grid: Grid) -> None:
-        """Delegates direction evaluation directly to the active state strategy."""
-        match self.state:
-            case GhostState.CHASE:
-                self.current_bhvr = self.ghost_specific_bhvr
-            case GhostState.SCATTER:
-                self.current_bhvr = self.scatter_bhvr
-            case GhostState.FRIGHTENED:
-                self.current_bhvr = self.frighten_bhvr
-            case GhostState.EATEN:
-                self.current_bhvr = self.eaten_bhvr
-            case _:
-                self.current_bhvr = None
-        if self.current_bhvr:
-            self.current_bhvr.update_direction(grid)
+    def update_buffered_direction(self) -> None:
+        self._get_target()
+        if not self.direction:
+            return
 
+        upcoming_cell = Ghost._get_next_cell(self.grid, self.current_cell, self.direction)
 
-# Red ghost
-class Blinky(Ghost):
-    @model_validator(mode="after")
-    def init_behaviors(self) -> 'Blinky':
-        self.ghost_specific_bhvr: bhvr.BlinkyBehavior = bhvr.BlinkyBehavior(ghost=self, pacman=self.pacman)
-        return self
+        if not upcoming_cell or not self.current_cell.can_exit(self.direction):
+            eval_cell = self.current_cell
+        else:
+            eval_cell = upcoming_cell
 
+        opposite_dir = self.direction.opposite
+        best_dir: Mvt | None = None
+        min_dist = float("inf")
+        valid_directions: list[Mvt] = []
 
-# Pink ghost
-class Pinky(Ghost):
-    @model_validator(mode="after")
-    def init_behaviors(self) -> 'Pinky':
-        self.ghost_specific_bhvr: bhvr.PinkyBehavior = bhvr.PinkyBehavior(ghost=self, pacman=self.pacman)
-        return self
+        for direction in self._DIRECTION_PRIORITY:
+            if direction == opposite_dir:
+                continue
 
+            if eval_cell.can_exit(direction):
+                neighbor_cell = Ghost._get_next_cell(self.grid, eval_cell, direction)
+                if not neighbor_cell:
+                    continue
 
-# Cyan ghost
-class Inky(Ghost):
-    blinky: Ghost
-    @model_validator(mode="after")
-    def init_behaviors(self) -> 'Inky':
-        self.ghost_specific_bhvr: bhvr.InkyBehavior = bhvr.InkyBehavior(
-            ghost=self, pacman=self.pacman, blinky=self.blinky)
-        return self
+                valid_directions.append(direction)
+                ny, nx = neighbor_cell.coordinates
+                distance = dist((ny + 0.5, nx + 0.5), self.target_coord)
+                if distance < min_dist:
+                    min_dist = distance
+                    best_dir = direction
 
+        if self.state == GhostState.FRIGHTENED:
+            self.buffered_direction = random.choice(valid_directions) if valid_directions else opposite_dir
+            return
 
-# Orange ghost
-class Clyde(Ghost):
-    @model_validator(mode="after")
-    def init_behaviors(self) -> 'Clyde':
-        self.ghost_specific_bhvr: bhvr.ClydeBehavior = bhvr.ClydeBehavior(ghost=self, pacman=self.pacman)
-        return self
+        if best_dir is not None:
+            self.buffered_direction = best_dir
+        elif valid_directions:
+            self.buffered_direction = valid_directions[0]
+
+    @classmethod
+    def _get_next_cell(cls, grid: Grid, current_cell: Cell, direction: Mvt) -> Cell | None:
+        curr_y, curr_x = current_cell.y, current_cell.x
+        off_y, off_x = direction.cell_offset
+        ny, nx = curr_y + off_y, curr_x + off_x
+        if 0 <= ny < grid.height and 0 <= nx < grid.width:
+            return grid.get_cell(ny, nx)
+        return None
+
+    def _get_target(self) -> None:
+        if self.state and self.state in self.behaviors:
+            self.behaviors[self.state]()
+
+    @abstractmethod
+    def _chase_behavior(self) -> None:
+        """Specific ghost behaviors to recover their targeted cell"""
+        pass
+
+    def _scatter_behavior(self) -> None:
+        self.target_coord = self.scatter_coord
+
+    def _frightened_behavior(self) -> None:
+        """Target coordinate unused; movement selected pseudo-randomly."""
+        pass
+
+    def _eaten_behavior(self) -> None:
+        self.target_coord = self.scatter_coord
