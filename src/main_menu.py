@@ -20,7 +20,6 @@ class MainMenuView(arcade.View):
 
     def on_draw(self):
         self.clear()
-        screen_width, screen_height = arcade.get_display_size()
         arcade.draw_text(
             "PAC-MAN",
             self.window.width / 2,
