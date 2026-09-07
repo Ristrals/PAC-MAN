@@ -14,7 +14,6 @@ class GameView(arcade.View):
         super().__init__()
         self.config = config
         self.current_level = 1
-        self.load_level()
         self.is_all_empty = False
         self.pause = False
         self.cheat_mode = False
@@ -24,6 +23,7 @@ class GameView(arcade.View):
         self.options = ["RESUME", "MAIN MENU"]
         self.selected = 0
         self.score = 0
+        self.load_level()
 
     def calculate_render_params(self):
         cell_size_w = (self.window.width * 0.6) / self.grid.width
@@ -42,6 +42,7 @@ class GameView(arcade.View):
         )
         self.grid.place_items(self.config.pacgum)
         self.entity_manager = EntityManager(self.grid, base_speed=5.0)
+        self.entity_manager.pacman.is_invincible = self.invincible
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
 
