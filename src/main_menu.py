@@ -59,7 +59,6 @@ class MainMenuView(arcade.View):
                 text = f"{idx + 1}. --- - --- pts"
             arcade.draw_text(
                 text,
-                self.window.width / 8 * 5,
                 self.window.height * 0.65 - i * 60,
                 arcade.color.WHITE,
                 15
