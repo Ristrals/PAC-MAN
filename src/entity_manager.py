@@ -63,6 +63,7 @@ class EntityManager:
         self.pacman.coordinates = self.pacman.init_coord
         for ghost in self.ghosts:
             ghost.coordinates = ghost.init_coord
+        self.set_ghost_states(ent.Gs.SCATTER)
 
     # Adjust all ghost states and speed
     def set_ghost_states(self, ghost_state: ent.Gs) -> None:
