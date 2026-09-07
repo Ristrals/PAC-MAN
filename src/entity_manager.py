@@ -19,7 +19,6 @@ class EntityManager:
     def __init__(self, grid: Grid, base_speed: float = 3.0) -> None:
         self.grid: Grid = grid
         self.base_speed: float = base_speed
-        self._initialize_tokens()
 
         # Game timer attributes
         self._timer: float = 0.0
@@ -27,9 +26,12 @@ class EntityManager:
         self._current_behavior: ent.Gs = ent.Gs.CHASE
         self._base_behavior: ent.Gs = ent.Gs.CHASE
 
+        self._initialize_tokens()
+
     def update(self, delta_time: float) -> FrameSummary:
         summary = FrameSummary()
 
+        print(self.ghosts[0].state,self.ghosts[0].eaten_timer, self.pacman.is_powered_up)
         self._update_ghost_states(delta_time)
 
         # All token move
@@ -53,10 +55,13 @@ class EntityManager:
         if not self.pacman.is_invincible:
             for ghost in self.ghosts:
                 if dist(ghost.coordinates, self.pacman.coordinates) < 0.5:
+                    print("COLLISION")
                     match ghost.state:
                         case ent.Gs.FRIGHTENED:
                             summary.eaten_ghosts.append(ghost)
+                            ghost.eaten_timer = ent.Gs.EATEN.value[2]
                             ghost.state = ent.Gs.EATEN
+                            print(f"AfterShock: {self.ghosts[0].state}")
                         case ent.Gs.CHASE | ent.Gs.SCATTER:
                             summary.defeated = True
                             self.pacman.active = False
@@ -79,6 +84,7 @@ class EntityManager:
                 ghost.eaten_timer -= delta_time
                 if ghost.eaten_timer <= 0.0:
                     ghost.state = self._base_behavior
+                    ghost.speed = self._base_behavior.value[1] * self.base_speed
 
         if self._current_behavior == ent.Gs.FRIGHTENED:
             self._frighten_timer -= delta_time
@@ -108,6 +114,8 @@ class EntityManager:
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
                 ghost.state = ghost_state
+                if ghost_state == ent.Gs.FRIGHTENED and ghost.direction:
+                    ghost.direction = ghost.direction.opposite
                 ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
     def _initialize_tokens(self) -> None:

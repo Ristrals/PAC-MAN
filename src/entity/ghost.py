@@ -17,7 +17,7 @@ class GhostState(Enum):
     CHASE = ("chase", 0.75, 20.0)
     SCATTER = ("scatter", 0.75, 5.0)
     FRIGHTENED = ("frightened", 0.5, 7.0)
-    EATEN = ("eaten", 1.80, 5.0)
+    EATEN = ("eaten", 1.80, 7.0)
 
     def get_state(self) -> str:
         return self.value[0]
