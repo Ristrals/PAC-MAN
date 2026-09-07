@@ -14,10 +14,10 @@ import src.entity as ent
 
 
 class GhostState(Enum):
-    CHASE = ("chase", 0.75)
-    SCATTER = ("scatter", 0.75)
-    FRIGHTENED = ("frightened", 0.5)
-    EATEN = ("eaten", 1.80)
+    CHASE = ("chase", 0.75, 20.0)
+    SCATTER = ("scatter", 0.75, 5.0)
+    FRIGHTENED = ("frightened", 0.5, 7.0)
+    EATEN = ("eaten", 1.80, 5.0)
 
     def get_state(self) -> str:
         return self.value[0]
@@ -35,6 +35,7 @@ class Ghost(Token, ABC):
     pacman: ent.Pacman
     behaviors: dict[GhostState, Callable[..., Any]] = Field(default_factory=dict, exclude=True)
     was_centered: bool = True  # Required for Ghost direction calculation
+    eaten_timer: float = 0.0
     _DIRECTION_PRIORITY: list[Mvt] = [Mvt.UP, Mvt.LEFT, Mvt.DOWN, Mvt.RIGHT]
 
     @model_validator(mode="after")

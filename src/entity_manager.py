@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from math import dist
+from enum import Enum
 import src.entity as ent
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
@@ -14,16 +15,22 @@ class FrameSummary:
     defeated: bool = False
     eaten_ghosts: list[ent.Ghost] = field(default_factory=list)
 
-
-# TO DO:
 class EntityManager:
     def __init__(self, grid: Grid, base_speed: float = 3.0) -> None:
         self.grid: Grid = grid
         self.base_speed: float = base_speed
         self._initialize_tokens()
 
+        # Game timer attributes
+        self._timer: float = 0.0
+        self._frighten_timer: float = 0.0
+        self._current_behavior: ent.Gs = ent.Gs.CHASE
+        self._base_behavior: ent.Gs = ent.Gs.CHASE
+
     def update(self, delta_time: float) -> FrameSummary:
         summary = FrameSummary()
+
+        self._update_ghost_states(delta_time)
 
         # All token move
         self.pacman.move(delta_time, self.grid)
@@ -65,8 +72,39 @@ class EntityManager:
             ghost.coordinates = ghost.init_coord
         self.set_ghost_states(ent.Gs.SCATTER)
 
+    # Update Ghost behaviors regarding Delta Time
+    def _update_ghost_states(self, delta_time: float) -> None:
+        for ghost in self.ghosts:
+            if ghost.state == ent.Gs.EATEN:
+                ghost.eaten_timer -= delta_time
+                if ghost.eaten_timer <= 0.0:
+                    ghost.state = self._base_behavior
+
+        if self._current_behavior == ent.Gs.FRIGHTENED:
+            self._frighten_timer -= delta_time
+            if self._frighten_timer <= 0.0:
+                self.set_ghost_states(self._base_behavior)
+            return
+
+        self._timer -= delta_time
+        if self._timer <= 0.0:
+            match self._current_behavior:
+                case ent.Gs.CHASE:
+                    self._base_behavior = ent.Gs.SCATTER
+                    self.set_ghost_states(ent.Gs.SCATTER)
+                case ent.Gs.SCATTER:
+                    self._base_behavior = ent.Gs.CHASE
+                    self.set_ghost_states(ent.Gs.CHASE)
+
     # Adjust all ghost states and speed
     def set_ghost_states(self, ghost_state: ent.Gs) -> None:
+        match ghost_state:
+            case (ent.Gs.CHASE | ent.Gs.SCATTER):
+                if self._current_behavior != ent.Gs.FRIGHTENED:
+                    self._timer = ghost_state.value[2]
+            case ent.Gs.FRIGHTENED:
+                self._frighten_timer = ghost_state.value[2]
+        self._current_behavior = ghost_state
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
                 ghost.state = ghost_state
