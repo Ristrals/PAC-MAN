@@ -6,7 +6,7 @@ import random
 from abc import ABC, abstractmethod
 from typing import Callable, Any
 from pydantic import ConfigDict, Field, model_validator
-from src.data_lib import Movements as Mvt
+from src.data_lib import Movements as Mvt, TextColors as Tc
 from src.entity.token import Token
 from src.grid.cell import Cell
 from src.grid.grid_loader import Grid
@@ -14,10 +14,10 @@ import src.entity as ent
 
 
 class GhostState(Enum):
-    CHASE = ("chase", 0.75, 20.0)
-    SCATTER = ("scatter", 0.75, 5.0)
-    FRIGHTENED = ("frightened", 0.5, 7.0)
-    EATEN = ("eaten", 1.80, 7.0)
+    CHASE = ("Chase", 0.75, 20.0)
+    SCATTER = ("Scatter", 0.75, 5.0)
+    FRIGHTENED = ("Frightened", 0.5, 7.0)
+    EATEN = ("Eaten", 1.80, 7.0)
 
     def get_state(self) -> str:
         return self.value[0]
@@ -51,6 +51,31 @@ class Ghost(Token, ABC):
                 self.direction = move
                 continue
         return self
+
+    def __str__(self) -> str:
+        ghost_name = ""
+        y, x = self.coordinates
+        ty, tx = self.target_coord
+        match self.__class__.__name__:
+            case "Blinky":
+                ghost_name = f"{Tc.red}Blinky{Tc.clr}"
+            case "Pinky":
+                ghost_name = f"{Tc.pnk}Pinky{Tc.clr}"
+            case "Inky":
+                ghost_name = f"{Tc.cyn}Inky{Tc.clr}"
+            case "Clyde":
+                ghost_name = f"{Tc.org}Inky{Tc.clr}"
+        to_print = (
+            f"{ghost_name} | "
+            f"{Tc.ylw}self{Tc.clr}:({y:.3f},{x:.3f}),{Tc.ylw}tgt{Tc.clr}:({ty:.3f},{tx:.3f}) | "
+            f"{Tc.ylw}dir{Tc.clr}:{self.direction.value if self.direction else None},"
+            f"{Tc.ylw}buff_dir{Tc.clr}:{self.buffered_direction.value if self.buffered_direction else None} | "
+            f"{self.state.value[0] if self.state else None}"
+        )
+        if self.state is ent.Gs.EATEN:
+            to_print += f" | {Tc.ylw}eaten_timer{Tc.clr}:{self.eaten_timer:.3f}"
+
+        return to_print
 
     def move(self, delta_time: float, grid: Grid) -> None:
         if not self.active:
