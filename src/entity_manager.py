@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from math import dist
-from enum import Enum
 import src.entity as ent
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
@@ -36,6 +35,7 @@ class EntityManager:
         # All token move
         self.pacman.move(delta_time, self.grid)
         for ghost in self.ghosts:
+            print(ghost)
             ghost.update_buffered_direction()
             ghost.move(delta_time, self.grid)
 
