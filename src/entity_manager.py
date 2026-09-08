@@ -31,7 +31,6 @@ class EntityManager:
     def update(self, delta_time: float) -> FrameSummary:
         summary = FrameSummary()
 
-        print(self.ghosts[0].state,self.ghosts[0].eaten_timer, self.pacman.is_powered_up)
         self._update_ghost_states(delta_time)
 
         # All token move
@@ -55,13 +54,11 @@ class EntityManager:
         if not self.pacman.is_invincible:
             for ghost in self.ghosts:
                 if dist(ghost.coordinates, self.pacman.coordinates) < 0.5:
-                    print("COLLISION")
                     match ghost.state:
                         case ent.Gs.FRIGHTENED:
                             summary.eaten_ghosts.append(ghost)
                             ghost.eaten_timer = ent.Gs.EATEN.value[2]
                             ghost.state = ent.Gs.EATEN
-                            print(f"AfterShock: {self.ghosts[0].state}")
                         case ent.Gs.CHASE | ent.Gs.SCATTER:
                             summary.defeated = True
                             self.pacman.active = False
