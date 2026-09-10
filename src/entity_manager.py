@@ -5,6 +5,7 @@ from math import dist
 import src.entity as ent
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
+from src.data_lib import Movements as Mvt
 
 
 @dataclass
@@ -36,7 +37,7 @@ class EntityManager:
         self.pacman.move(delta_time, self.grid)
         for ghost in self.ghosts:
             print(ghost)
-            ghost.update_buffered_direction()
+            ghost.update_buffered_direction(delta_time)
             ghost.move(delta_time, self.grid)
 
         # Check if pacman is centered on a pacgum cell
@@ -57,7 +58,7 @@ class EntityManager:
                     match ghost.state:
                         case ent.Gs.FRIGHTENED:
                             summary.eaten_ghosts.append(ghost)
-                            ghost.eaten_timer = ent.Gs.EATEN.value[2]
+                            ghost.respawn_timer = ent.Gs.EATEN.value[2]
                             ghost.state = ent.Gs.EATEN
                         case ent.Gs.CHASE | ent.Gs.SCATTER:
                             summary.defeated = True
@@ -77,11 +78,10 @@ class EntityManager:
     # Update Ghost behaviors regarding Delta Time
     def _update_ghost_states(self, delta_time: float) -> None:
         for ghost in self.ghosts:
-            if ghost.state == ent.Gs.EATEN:
-                ghost.eaten_timer -= delta_time
-                if ghost.eaten_timer <= 0.0:
-                    ghost.state = self._base_behavior
-                    ghost.speed = self._base_behavior.value[1] * self.base_speed
+            if ghost.state == ent.Gs.EATEN and ghost.spawn_snapped:
+                ghost.respawn_timer -= delta_time
+                if ghost.respawn_timer <= 0.0:
+                    self._respawn_ghost(ghost)
 
         if self._current_behavior == ent.Gs.FRIGHTENED:
             self._frighten_timer -= delta_time
@@ -146,4 +146,18 @@ class EntityManager:
             target_coord=self.pacman.coordinates, scatter_coord=(ghosts_pos[3].y + 0.5, ghosts_pos[3].x + 0.5),
             pacman=self.pacman)
         self.ghosts: tuple[ent.Blinky, ent.Pinky, ent.Inky, ent.Clyde] = (blinky, pinky, inky, clyde)
-        self.set_ghost_states(ent.Gs.CHASE)
+        self.set_ghost_states(ent.Gs.SCATTER)
+
+    def _respawn_ghost(self, ghost: ent.Ghost) -> None:
+        ghost.respawn_timer = 0.0
+        ghost.state = self._base_behavior
+        ghost.speed = self._base_behavior.value[1] * self.base_speed
+        ghost.spawn_snapped = False
+        for direction in Mvt:
+            if ghost.current_cell.can_exit(direction):
+                ghost.direction = direction
+                ghost.buffered_direction = direction
+                break
+
+
+
