@@ -1,5 +1,6 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
+from src.data_lib import TextColors as Tc
 from src.entity.token import Token
 from src.grid.grid_loader import Grid
 
@@ -7,6 +8,18 @@ from src.grid.grid_loader import Grid
 class Pacman(Token):
     is_powered_up: bool = False
     is_invincible: bool = False
+
+    def __str__(self) -> str:
+        name = f"{Tc.ylw}Pacman{Tc.clr}"
+        y, x = self.coordinates
+        to_print = (
+            f"{name} | "
+            f"{Tc.ylw}self{Tc.clr}:({y:.3f},{x:.3f}),init:{self.init_coord} | "
+            f"{Tc.ylw}dir{Tc.clr}:{self.direction.value if self.direction else None},"
+            f"{Tc.ylw}buff_dir{Tc.clr}:{self.buffered_direction.value if self.buffered_direction else None} | "
+        )
+
+        return to_print
 
     def move(self, delta_time: float, grid: Grid) -> None:
         if not self.active:
