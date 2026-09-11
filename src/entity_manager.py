@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from math import dist
 import src.entity as ent
+from src.entity import pacman
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
 from src.data_lib import Movements as Mvt
@@ -35,6 +36,7 @@ class EntityManager:
 
         # All token move
         self.pacman.move(delta_time, self.grid)
+        print(self.pacman)
         for ghost in self.ghosts:
             print(ghost)
             ghost.update_buffered_direction(delta_time)

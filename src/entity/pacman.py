@@ -16,7 +16,7 @@ class Pacman(Token):
             f"{name} | "
             f"{Tc.ylw}self{Tc.clr}:({y:.3f},{x:.3f}),init:{self.init_coord} | "
             f"{Tc.ylw}dir{Tc.clr}:{self.direction.value if self.direction else None},"
-            f"{Tc.ylw}buff_dir{Tc.clr}:{self.buffered_direction.value if self.buffered_direction else None} | "
+            f"{Tc.ylw}buff_dir{Tc.clr}:{self.buffered_direction.value if self.buffered_direction else None}"
         )
 
         return to_print
