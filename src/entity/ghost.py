@@ -141,7 +141,7 @@ class Ghost(Token, ABC):
                 continue
 
             if eval_cell.can_exit(direction):
-                neighbor_cell = Ghost._get_next_cell(self.grid, eval_cell, direction)
+                neighbor_cell = self._get_next_cell(eval_cell, direction)
                 if not neighbor_cell:
                     continue
 
@@ -196,7 +196,7 @@ class Ghost(Token, ABC):
 
         for direction in self._DIRECTION_PRIORITY:
             if self.current_cell.can_exit(direction):
-                neighbor = self._get_next_cell(self.grid, self.current_cell, direction)
+                neighbor = self._get_next_cell(self.current_cell, direction)
                 if neighbor:
                     n_coords = neighbor.coordinates
                     if n_coords not in visited:
@@ -210,7 +210,7 @@ class Ghost(Token, ABC):
             curr_cell, initial_direction = queue.popleft()
             for direction in self._DIRECTION_PRIORITY:
                 if curr_cell.can_exit(direction):
-                    neighbor = self._get_next_cell(self.grid, curr_cell, direction)
+                    neighbor = self._get_next_cell(curr_cell, direction)
                     if neighbor:
                         n_coords = neighbor.coordinates
                         if n_coords not in visited:
@@ -223,13 +223,12 @@ class Ghost(Token, ABC):
         self.buffered_direction = self.direction
 
     # Recovers next cell on trajectory
-    @classmethod
-    def _get_next_cell(cls, grid: Grid, current_cell: Cell, direction: Mvt) -> Cell | None:
+    def _get_next_cell(self, current_cell: Cell, direction: Mvt) -> Cell | None:
         curr_y, curr_x = current_cell.y, current_cell.x
         off_y, off_x = direction.cell_offset
         ny, nx = curr_y + off_y, curr_x + off_x
-        if 0 <= ny < grid.height and 0 <= nx < grid.width:
-            return grid.get_cell(ny, nx)
+        if 0 <= ny < self.grid.height and 0 <= nx < self.grid.width:
+            return self.grid.get_cell(ny, nx)
         return None
 
     # Recovers target tile relative to current state
