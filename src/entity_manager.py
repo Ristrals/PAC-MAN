@@ -161,5 +161,13 @@ class EntityManager:
                 ghost.buffered_direction = direction
                 break
 
+    def freeze(self):
+        for ghost in self.ghosts:
+            ghost.direction = None
+            ghost.buffered_direction = None
+
+    def unfreeze(self):
+        for ghost in self.ghosts:
+            ghost.initiate_movement()
 
 
