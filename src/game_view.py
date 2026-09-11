@@ -328,7 +328,7 @@ class GameView(arcade.View):
             self.entity_manager.pacman.buffered_direction = Movements.RIGHT
 
     def on_update(self, delta_time):
-        if self.pause:
+        if self.pause or self.cheat_mode:
             return
         self.time_left -= delta_time
         summary = self.entity_manager.update(delta_time)
