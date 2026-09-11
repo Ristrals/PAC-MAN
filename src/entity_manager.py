@@ -169,5 +169,3 @@ class EntityManager:
     def unfreeze(self):
         for ghost in self.ghosts:
             ghost.initiate_movement()
-
-
