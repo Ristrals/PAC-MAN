@@ -20,6 +20,7 @@ class GhostState(Enum):
     SCATTER = ("Scatter", 0.75, 5.0)
     FRIGHTENED = ("Frightened", 0.5, 7.0)
     EATEN = ("Eaten", 1.80, 5.0)
+    FREEZE = ("Freeze", 0)
 
     def get_state(self) -> str:
         return self.value[0]
