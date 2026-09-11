@@ -244,14 +244,11 @@ class Ghost(Token, ABC):
         dist_y = abs(self.y - target_y)
         dist_x = abs(self.x - target_x)
 
-        # Calculate step-aware tolerance
         step_distance = self.speed * delta_time
         tolerance = max(0.08, step_distance * 0.75)
 
-        # 1. Direct coordinate check (bypasses cell index truncation bugs)
-        # if isclose(self.y, target_y, abs_tol=tolerance) and isclose(self.x, target_x, abs_tol=tolerance):
         if dist_y <= tolerance and dist_x <= tolerance:
-            print(f"<<<<< {self.__class__.__name__} - ARRIVED >>>>>")
+            # print(f"<<<<< {self.__class__.__name__} - ARRIVED >>>>>")  # test print
             self.y, self.x = self.current_cell.center_coord
             self.direction = None
             self.buffered_direction = None
@@ -260,6 +257,10 @@ class Ghost(Token, ABC):
             return True
         return False
 
+    def _get_relative_distance(self, target: tuple[float, float]) -> float:
+        return dist(self.coordinates, target)
+
+    # [Behaviors]
     @abstractmethod
     def _chase_behavior(self) -> None:
         """Specific ghost behaviors to recover their targeted cell"""
@@ -275,6 +276,9 @@ class Ghost(Token, ABC):
     def _eaten_behavior(self) -> None:
         if self.init_coord:
             self.target_coord = self.init_coord
+
+
+
 
     # [Tools]
     @staticmethod
