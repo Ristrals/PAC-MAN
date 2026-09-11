@@ -313,6 +313,10 @@ class GameView(arcade.View):
                     self.next_level()
             elif key == arcade.key.F:
                 self.ghost_freeze = not self.ghost_freeze
+                if self.ghost_freeze:
+                    self.entity_manager.freeze
+                else:
+                    self.entity_manager.unfreeze
             elif key == arcade.key.L:
                 self.lives += 1
             return
