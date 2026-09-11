@@ -26,7 +26,7 @@ class EntityManager:
         self._frighten_timer: float = 0.0
         self._current_behavior: ent.Gs = ent.Gs.CHASE
         self._base_behavior: ent.Gs = ent.Gs.CHASE
-
+        self.ghost_freeze: bool = False
         self._initialize_tokens()
 
     def update(self, delta_time: float) -> FrameSummary:
@@ -37,10 +37,11 @@ class EntityManager:
         # All token move
         self.pacman.move(delta_time, self.grid)
         print(self.pacman)
-        for ghost in self.ghosts:
-            print(ghost)
-            ghost.update_buffered_direction(delta_time)
-            ghost.move(delta_time, self.grid)
+        if not self.ghost_freeze:
+            for ghost in self.ghosts:
+                print(ghost)
+                ghost.update_buffered_direction(delta_time)
+                ghost.move(delta_time, self.grid)
 
         # Check if pacman is centered on a pacgum cell
         if self.pacman.is_cell_centered():
@@ -160,12 +161,3 @@ class EntityManager:
                 ghost.direction = direction
                 ghost.buffered_direction = direction
                 break
-
-    def freeze(self):
-        for ghost in self.ghosts:
-            ghost.direction = None
-            ghost.buffered_direction = None
-
-    def unfreeze(self):
-        for ghost in self.ghosts:
-            ghost.initiate_movement()
