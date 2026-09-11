@@ -3,7 +3,6 @@
 from dataclasses import dataclass, field
 from math import dist
 import src.entity as ent
-from src.entity import pacman
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
 from src.data_lib import Movements as Mvt
@@ -15,6 +14,7 @@ class FrameSummary:
     eat_superpacgum: bool = False
     defeated: bool = False
     eaten_ghosts: list[ent.Ghost] = field(default_factory=list)
+
 
 class EntityManager:
     def __init__(self, grid: Grid, base_speed: float = 3.0) -> None:
