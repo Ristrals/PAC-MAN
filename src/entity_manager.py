@@ -73,9 +73,16 @@ class EntityManager:
 
     # Resets all token positions
     def reset_positions(self) -> None:
+
         self.pacman.coordinates = self.pacman.init_coord
+        assert isinstance(self.pacman.init_coord, tuple)
+        py, px = self.pacman.init_coord
+        self.pacman.current_cell = self.grid.get_cell(int(px), int(py))
         for ghost in self.ghosts:
             ghost.coordinates = ghost.init_coord
+            assert isinstance(ghost.init_coord, tuple)
+            gy, gx = ghost.init_coord
+            ghost.current_cell = self.grid.get_cell(int(gx), int(gy))
         self.set_ghost_states(ent.Gs.SCATTER)
 
     # Update Ghost behaviors regarding Delta Time
@@ -115,7 +122,11 @@ class EntityManager:
             if ghost.state != ent.Gs.EATEN:
                 ghost.state = ghost_state
                 if ghost_state == ent.Gs.FRIGHTENED and ghost.direction:
-                    ghost.direction = ghost.direction.opposite
+                    if ghost.current_cell.can_exit(ghost.direction.opposite):
+                        ghost.direction = ghost.direction.opposite
+                    else:
+                        if ghost.is_cell_centered():
+                            ghost.initiate_movement()
                 ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
     def _initialize_tokens(self) -> None:
