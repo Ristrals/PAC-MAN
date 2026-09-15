@@ -23,6 +23,10 @@ class Cell:
     def coordinates(self) -> tuple[int, int]:
         return self.y, self.x
 
+    @property
+    def center_coord(self) -> tuple[float, float]:
+        return self.y + 0.5, self.x + 0.5
+
     # Return if the cell be exited in gived direction
     def can_exit(self, direction: Mvt | None) -> bool:
         match direction:

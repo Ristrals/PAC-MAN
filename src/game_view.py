@@ -314,6 +314,7 @@ class GameView(arcade.View):
                     self.next_level()
             elif key == arcade.key.F:
                 self.ghost_freeze = not self.ghost_freeze
+                self.entity_manager.ghost_freeze = self.ghost_freeze
             elif key == arcade.key.L:
                 self.lives += 1
             return
@@ -337,6 +338,9 @@ class GameView(arcade.View):
             self.score += self.config.points_per_pacgum
         if summary.eat_superpacgum:
             self.score += self.config.points_per_super_pacgum
+        if summary.eaten_ghosts:
+            count = len(summary.eaten_ghosts)
+            self.score += self.config.points_per_ghost * count
         if summary.defeated:
             self.lives -= 1
             if self.lives <= 0:
