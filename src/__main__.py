@@ -17,8 +17,8 @@ if __name__ == '__main__':
         sys.exit(1)
     screen_width, screen_height = arcade.get_display_size()
     window = arcade.Window(
-        int(screen_width * 0.95),
-        int(screen_height * 0.95),
+        int(screen_width * 0.85),
+        int(screen_height * 0.85),
         "PAC-MAN"
     )
     menu = MainMenuView(config)

@@ -43,6 +43,7 @@ class GameView(arcade.View):
         self.grid.place_items(self.config.pacgum)
         self.entity_manager = EntityManager(self.grid, base_speed=5.0)
         self.entity_manager.pacman.is_invincible = self.invincible
+        self.entity_manager.ghost_freeze = self.ghost_freeze
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
 
@@ -193,7 +194,7 @@ class GameView(arcade.View):
             "❤️" * self.lives,
             self.window.width / 10,
             self.window.height - 30,
-            arcade.color.WHITE,
+            arcade.color.RED,
             20,
             anchor_x="center"
         )
