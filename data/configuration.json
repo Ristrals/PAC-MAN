@@ -10,7 +10,7 @@
     "level_max_time": 90,
     "highscore_filename": "highscores.json",
     "levels": [
-        {"width": 15, "height": 15},
+        {"width": 28, "height": 36},
         {"width": 15, "height": 15},
         {"width": 15, "height": 15},
         {"width": 15, "height": 15},

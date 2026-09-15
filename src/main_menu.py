@@ -38,10 +38,13 @@ class MainMenuView(arcade.View):
             anchor_x="center",
             bold=True
         )
-        entries = self.score_manager.get_top_10()
-        for i, entry in enumerate(entries[:5]):
-            if self.score_manager:
-                text = f"{i + 1}.{entry.name} - {entry.score} pts"
+        if self.score_manager:
+            entries = self.score_manager.get_top_10()
+        else:
+            entries = []
+        for i in range(5):
+            if i < len(entries):
+                text = f"{i + 1}.{entries[i].name} - {entries[i].score} pts"
             else:
                 text = f"{i + 1}. --- - --- pts"
             arcade.draw_text(
@@ -51,10 +54,10 @@ class MainMenuView(arcade.View):
                 arcade.color.WHITE,
                 15
             )
-        for i, entry in enumerate(entries[5:]):
+        for i in range(5):
             idx = i + 5
-            if self.score_manager:
-                text = f"{idx + 1}.{entry.name} - {entry.score} pts"
+            if idx < len(entries):
+                text = f"{idx + 1}.{entries[idx].name} - {entries[idx].score} pts"
             else:
                 text = f"{idx + 1}. --- - --- pts"
             arcade.draw_text(
