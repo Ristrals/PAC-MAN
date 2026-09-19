@@ -7,7 +7,7 @@
 #   By: junruan <junruan@student.42.fr>              +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/08/17 18:26:14 by junruan             #+#    #+#            #
-#   Updated: 2026/08/19 19:48:44 by junruan            ###   ########.fr      #
+#   Updated: 2026/09/19 16:44:35 by junruan            ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -18,8 +18,8 @@ import json
 
 
 class LevelConfig(BaseModel):
-    width: int = Field(default=28, ge=5)
-    height: int = Field(default=36, ge=5)
+    width: int = Field(default=15, ge=5)
+    height: int = Field(default=15, ge=5)
 
     @field_validator("width", "height", mode="before")
     @classmethod
