@@ -77,12 +77,12 @@ class EntityManager:
         self.pacman.coordinates = self.pacman.init_coord
         assert isinstance(self.pacman.init_coord, tuple)
         py, px = self.pacman.init_coord
-        self.pacman.current_cell = self.grid.get_cell(int(px), int(py))
+        self.pacman.current_cell = self.grid.get_cell(int(py), int(px))
         for ghost in self.ghosts:
             ghost.coordinates = ghost.init_coord
             assert isinstance(ghost.init_coord, tuple)
             gy, gx = ghost.init_coord
-            ghost.current_cell = self.grid.get_cell(int(gx), int(gy))
+            ghost.current_cell = self.grid.get_cell(int(gy), int(gx))
         self.set_ghost_states(ent.Gs.SCATTER)
 
     # Update Ghost behaviors regarding Delta Time
@@ -130,11 +130,11 @@ class EntityManager:
                 ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
     def _initialize_tokens(self) -> None:
-        pacman_pos: Cell = self.grid.get_cell(self.grid.height//2, self.grid.width//2)
+        pacman_pos: Cell = self.grid.get_center_position()
         ghosts_pos: list[Cell] = [
             self.grid.get_cell(1, 1),
             self.grid.get_cell(1, self.grid.width - 1),
-            self.grid.get_cell(self.grid.width - 2, self.grid.height - 1),
+            self.grid.get_cell(self.grid.height - 1, self.grid.width - 1),
             self.grid.get_cell(self.grid.height - 1, 1)
         ]
 

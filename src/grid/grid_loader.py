@@ -43,7 +43,7 @@ class Grid:
         ]
         for x, y in corners:
             self.get_cell(y, x).state_type = StateType.SUPER_PACGUM
-        maze_center = self.get_cell(self.height // 2, self.width // 2)
+        maze_center = self.get_center_position
         available = []
         for row in self.grid:
             for cell in row:
@@ -67,6 +67,16 @@ class Grid:
                 if cell.state_type != StateType.EMPTY:
                     return False
         return True
+
+    def get_center_position(self) -> Cell:
+        for row in self.grid:
+            for cell in row:
+                if not any([cell.north, cell.east, cell.south, cell.west]):
+                    print(f"Found blocked cell at y={cell.y}, x={cell.x}")
+                    print(f"Trying to access y={cell.y + 2}, x={cell.x + 3}")
+                    print(f"Grid size: {self.height} x {self.width}")
+                    return self.get_cell(cell.y + 2, cell.x + 3)
+        return self.get_cell(self.height // 2, self.width // 2)
 
 
 if __name__ == "__main__":

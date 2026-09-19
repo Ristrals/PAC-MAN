@@ -118,7 +118,7 @@ class Ghost(Token, ABC):
 
     def update_buffered_direction(self, delta_time: float) -> None:
         self._get_target()
-        if self.state ==  GhostState.EATEN:
+        if self.state == GhostState.EATEN:
             self._get_bfs_direction(delta_time)
             return
         self._get_proximity_direction()
