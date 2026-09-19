@@ -12,7 +12,7 @@ from src.error import ScoreErrorType as ScErrType
 # Score BaseModel
 class Score(BaseModel):
     name: Annotated[str, Field(max_length=10, pattern=r"^[a-zA-Z0-9 ]+$", alias="name")]
-    score: Annotated[int, Field(ge=0, le=99999, alias="score", default=0)]
+    score: Annotated[int, Field(ge=0, le=99999, alias="score")]
 
     @classmethod
     def validation_mitigation(cls, entry_index: int | None = None, **data) -> 'Score':
@@ -33,14 +33,15 @@ class Score(BaseModel):
                             data['name'] = data['name'][:10]
                         elif val_error_type == "string_pattern_mismatch":
                             data['name'] = re.sub(r"[^a-zA-Z0-9\s]", " ", data['name'])[:10]
+                        else:
+                            data['name'] = "Player"
                     if "score" in val_error_loc:
                         if val_error_type == "less_than_equal":
                             data['score'] = 99999
                         elif val_error_type == "greater_than_equal":
                             data['score'] = 0
-
-        data.setdefault("name", "Player")
-        data.setdefault("score", 0)
+                        else:
+                            data['score'] = 0
         return cls(**data)
 
 
@@ -77,7 +78,7 @@ class ScoreManager:
         self.score_board: list[Score] = []
         self.player_score: Score = Score(name="Player", score=0)
 
-        # __init__ File path check
+        # File path check
         try:
             self.check_file_path()
         except ScErr as se:
@@ -85,12 +86,12 @@ class ScoreManager:
             self.reset_score_board()
             self._is_valid_score_board = False
 
-        # __init__ Loading score board from file's data
+        # Loading score board from file's data
         if self._is_valid_score_board:
             try:
                 self.load_scores()
             except ScErr as se:
-                print(se.err_type)
+                # print(f"{se.err_type}")
                 if se.err_type in ("json_invalid", "missing"):
                     print(se)
                     self.reset_score_board()
@@ -111,6 +112,7 @@ class ScoreManager:
         with open(self._score_file_path, "r", encoding="utf-8") as scores_list:
             scores_string = scores_list.read()
         self.score_board = ScoreBoard.validation_mitigation(scores_string).scores
+        self.score_board.sort(key=lambda score: score.score, reverse=True)
 
     # Export scores into a JSON file, idealy before the game closes.
     def export_scores(self) -> None:
