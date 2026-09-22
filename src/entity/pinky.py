@@ -12,6 +12,7 @@ class Pinky(ent.Ghost):
         Mvt.LEFT: (0.0, -4.0),
         Mvt.RIGHT: (0.0, 4.0),
     }
+
     def _chase_behavior(self) -> None:
         if not self.pacman.direction:
             self.target_coord = self.pacman.coordinates
