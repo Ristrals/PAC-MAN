@@ -10,6 +10,7 @@ from src.entity.clyde import Clyde
 
 __all__ = [
     "Pacman",
+    "Ghost",
     "Blinky",
     "Pinky",
     "Inky",
