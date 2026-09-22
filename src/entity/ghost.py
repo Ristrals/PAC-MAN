@@ -40,9 +40,6 @@ class Ghost(Token, ABC):
     respawn_timer: float = 0.0
     _DIRECTION_PRIORITY: list[Mvt] = [Mvt.UP, Mvt.LEFT, Mvt.DOWN, Mvt.RIGHT]
 
-    def __hash__(self):
-        return id(self)
-
     @model_validator(mode="after")
     def init_sequence(self) -> 'Ghost':
         self.behaviors = {

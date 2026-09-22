@@ -28,7 +28,7 @@ class GameView(arcade.View):
         #WiP
         self.sprite_manager = SpriteManager()
         self.ghost_sprites: arcade.SpriteList = arcade.SpriteList()
-        self.ghost_sprite_map: dict[entity.Ghost, arcade.Sprite] = {}
+        self.ghost_sprite_map: dict[int, arcade.Sprite] = {}
         self.pacman_sprite: arcade.Sprite | None = None
 
         self.load_level()
@@ -148,10 +148,10 @@ class GameView(arcade.View):
                     )
 
     def draw_token(self):
-        # 1. Sync & Draw Pac-Man (circle primitive fallback)
+        # 1. Calculate Pac-Man position matching original math
         pacman = self.entity_manager.pacman
-        center_x = self.offset_x + (pacman.x + 0.5) * self.cell_size
-        center_y = self.offset_y + (self.grid.height - 1 - pacman.y + 0.5) * self.cell_size
+        center_x = self.offset_x + pacman.x * self.cell_size
+        center_y = self.offset_y + (self.grid.height - pacman.y) * self.cell_size
 
         if self.pacman_sprite:
             self.pacman_sprite.center_x = center_x
@@ -159,18 +159,20 @@ class GameView(arcade.View):
             self.pacman_sprite.draw()
         else:
             arcade.draw_circle_filled(
-                center_x, center_y, self.cell_size * 0.4, arcade.color.YELLOW
+                center_x,
+                center_y,
+                self.cell_size * 0.4,
+                arcade.color.YELLOW
             )
 
-        # 2. Sync & Draw Ghosts (using id(ghost) lookup)
+        # 2. Update and Draw Ghost Sprites
         for ghost in self.entity_manager.ghosts:
-            ghost_id = id(ghost)
-            if ghost_id in self.ghost_sprite_map:
-                ghost_sprite = self.ghost_sprite_map[ghost_id]
-                ghost_sprite.center_x = self.offset_x + (ghost.x + 0.5) * self.cell_size
-                ghost_sprite.center_y = self.offset_y + (self.grid.height - 1 - ghost.y + 0.5) * self.cell_size
+            ghost_sprite = self.ghost_sprite_map.get(id(ghost))
+            if ghost_sprite:
+                ghost_sprite.center_x = self.offset_x + ghost.x * self.cell_size
+                ghost_sprite.center_y = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
 
-        # Batch draw ghost sprites
+        # Batch draw all ghost sprites
         self.ghost_sprites.draw()
 
     def draw_cheat_panel(self):
