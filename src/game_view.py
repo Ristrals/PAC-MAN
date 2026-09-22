@@ -4,6 +4,7 @@ from src.grid.cell import StateType
 from src.end_view import EndView
 from src.data_lib import Movements
 from src.entity_manager import EntityManager
+from src.sprite_manager import SpriteManager
 from src import entity
 
 import arcade
@@ -23,6 +24,13 @@ class GameView(arcade.View):
         self.options = ["RESUME", "MAIN MENU"]
         self.selected = 0
         self.score = 0
+
+        #WiP
+        self.sprite_manager = SpriteManager()
+        self.ghost_sprites: arcade.SpriteList = arcade.SpriteList()
+        self.ghost_sprite_map: dict[entity.Ghost, arcade.Sprite] = {}
+        self.pacman_sprite: arcade.Sprite | None = None
+
         self.load_level()
 
     def calculate_render_params(self):
@@ -46,6 +54,7 @@ class GameView(arcade.View):
         self.entity_manager.ghost_freeze = self.ghost_freeze
         self.time_left = self.config.level_max_time
         self.calculate_render_params()
+        self.setup_sprites()
 
     def next_level(self):
         self.current_level += 1
@@ -139,30 +148,25 @@ class GameView(arcade.View):
                     )
 
     def draw_token(self):
+        # 1. Sync & Draw Pac-Man
         pacman = self.entity_manager.pacman
-        px = self.offset_x + pacman.x * self.cell_size
-        py = self.offset_y + (self.grid.height - pacman.y) * self.cell_size
-        arcade.draw_circle_filled(
-            px,
-            py,
-            self.cell_size * 0.4,
-            arcade.color.YELLOW
-        )
-        colors = [
-            arcade.color.RED,  # Blinky
-            arcade.color.ROSE,  # Pinky
-            arcade.color.CYAN,  # Inky
-            arcade.color.ORANGE  # Clyde
-        ]
-        for i, ghost in enumerate(self.entity_manager.ghosts):
-            px = self.offset_x + ghost.x * self.cell_size
-            py = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
-            arcade.draw_circle_filled(
-                px,
-                py,
-                self.cell_size * 0.4,
-                colors[i]
-            )
+        px = self.offset_x + (pacman.x + 0.5) * self.cell_size
+        py = self.offset_y + (self.grid.height - pacman.y - 0.5) * self.cell_size
+
+        self.pacman_sprite.center_x = px
+        self.pacman_sprite.center_y = py
+        self.pacman_sprite.draw()
+
+        # 2. Sync & Draw Ghosts via Dictionary Lookup
+        for ghost in self.entity_manager.ghosts:
+            ghost_sprite = self.ghost_sprite_map[ghost]
+            px = self.offset_x + (ghost.x + 0.5) * self.cell_size
+            py = self.offset_y + (self.grid.height - ghost.y - 0.5) * self.cell_size
+
+            ghost_sprite.center_x = px
+            ghost_sprite.center_y = py
+
+        self.ghost_sprites.draw()
 
     def draw_cheat_panel(self):
         arcade.draw_lbwh_rectangle_filled(
@@ -358,6 +362,25 @@ class GameView(arcade.View):
         if self.time_left <= 0:
             self.window.show_view(EndView(self.score, self.config, False))
 
+        def setup_sprites(self):
+            """Creates Arcade sprites using wake placeholders mapped by Ghost entity."""
+            self.ghost_sprites = arcade.SpriteList()
+            self.ghost_sprite_map: dict[entity.Ghost, arcade.Sprite] = {}
+
+            # 1. Setup Pac-Man Sprite
+            pacman_path = self.sprite_manager.get_pacman_sprites(self.entity_manager.pacman)[0]
+            self.pacman_sprite = arcade.Sprite(arcade.load_texture(pacman_path))
+            self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
+
+            # 2. Setup Ghost Sprites using temp_get_wake
+            for ghost in self.entity_manager.ghosts:
+                wake_path = self.sprite_manager.temp_get_wake(ghost)
+                ghost_sprite = arcade.Sprite(arcade.load_texture(wake_path))
+                ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
+
+                # Store mapping in view dictionary
+                self.ghost_sprite_map[ghost] = ghost_sprite
+                self.ghost_sprites.append(ghost_sprite)
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
