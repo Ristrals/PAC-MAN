@@ -362,25 +362,25 @@ class GameView(arcade.View):
         if self.time_left <= 0:
             self.window.show_view(EndView(self.score, self.config, False))
 
-        def setup_sprites(self):
-            """Creates Arcade sprites using wake placeholders mapped by Ghost entity."""
-            self.ghost_sprites = arcade.SpriteList()
-            self.ghost_sprite_map: dict[entity.Ghost, arcade.Sprite] = {}
+    def setup_sprites(self):
+        """Creates Arcade sprites using wake placeholders mapped by Ghost entity."""
+        self.ghost_sprites = arcade.SpriteList()
+        self.ghost_sprite_map: dict[entity.Ghost, arcade.Sprite] = {}
 
-            # 1. Setup Pac-Man Sprite
-            pacman_path = self.sprite_manager.get_pacman_sprites(self.entity_manager.pacman)[0]
-            self.pacman_sprite = arcade.Sprite(arcade.load_texture(pacman_path))
-            self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
+        # 1. Setup Pac-Man Sprite
+        pacman_path = self.sprite_manager.get_pacman_sprites(self.entity_manager.pacman)[0]
+        self.pacman_sprite = arcade.Sprite(arcade.load_texture(pacman_path))
+        self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
 
-            # 2. Setup Ghost Sprites using temp_get_wake
-            for ghost in self.entity_manager.ghosts:
-                wake_path = self.sprite_manager.temp_get_wake(ghost)
-                ghost_sprite = arcade.Sprite(arcade.load_texture(wake_path))
-                ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
+        # 2. Setup Ghost Sprites using temp_get_wake
+        for ghost in self.entity_manager.ghosts:
+            wake_path = self.sprite_manager.temp_get_wake(ghost)
+            ghost_sprite = arcade.Sprite(arcade.load_texture(wake_path))
+            ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
 
-                # Store mapping in view dictionary
-                self.ghost_sprite_map[ghost] = ghost_sprite
-                self.ghost_sprites.append(ghost_sprite)
+            # Store mapping in view dictionary
+            self.ghost_sprite_map[ghost] = ghost_sprite
+            self.ghost_sprites.append(ghost_sprite)
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
