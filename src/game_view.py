@@ -148,24 +148,29 @@ class GameView(arcade.View):
                     )
 
     def draw_token(self):
-        # 1. Sync & Draw Pac-Man
+        # 1. Sync & Draw Pac-Man (circle primitive fallback)
         pacman = self.entity_manager.pacman
-        px = self.offset_x + (pacman.x + 0.5) * self.cell_size
-        py = self.offset_y + (self.grid.height - pacman.y - 0.5) * self.cell_size
+        center_x = self.offset_x + (pacman.x + 0.5) * self.cell_size
+        center_y = self.offset_y + (self.grid.height - 1 - pacman.y + 0.5) * self.cell_size
 
-        self.pacman_sprite.center_x = px
-        self.pacman_sprite.center_y = py
-        self.pacman_sprite.draw()
+        if self.pacman_sprite:
+            self.pacman_sprite.center_x = center_x
+            self.pacman_sprite.center_y = center_y
+            self.pacman_sprite.draw()
+        else:
+            arcade.draw_circle_filled(
+                center_x, center_y, self.cell_size * 0.4, arcade.color.YELLOW
+            )
 
-        # 2. Sync & Draw Ghosts via Dictionary Lookup
+        # 2. Sync & Draw Ghosts (using id(ghost) lookup)
         for ghost in self.entity_manager.ghosts:
-            ghost_sprite = self.ghost_sprite_map[ghost]
-            px = self.offset_x + (ghost.x + 0.5) * self.cell_size
-            py = self.offset_y + (self.grid.height - ghost.y - 0.5) * self.cell_size
+            ghost_id = id(ghost)
+            if ghost_id in self.ghost_sprite_map:
+                ghost_sprite = self.ghost_sprite_map[ghost_id]
+                ghost_sprite.center_x = self.offset_x + (ghost.x + 0.5) * self.cell_size
+                ghost_sprite.center_y = self.offset_y + (self.grid.height - 1 - ghost.y + 0.5) * self.cell_size
 
-            ghost_sprite.center_x = px
-            ghost_sprite.center_y = py
-
+        # Batch draw ghost sprites
         self.ghost_sprites.draw()
 
     def draw_cheat_panel(self):
@@ -363,14 +368,15 @@ class GameView(arcade.View):
             self.window.show_view(EndView(self.score, self.config, False))
 
     def setup_sprites(self):
-        """Creates Arcade sprites using wake placeholders mapped by Ghost entity."""
-        self.ghost_sprites = arcade.SpriteList()
-        self.ghost_sprite_map: dict[entity.Ghost, arcade.Sprite] = {}
+        """Creates Arcade sprites using wake placeholders for ghosts."""
+        self.ghost_sprites.clear()
+        self.ghost_sprite_map.clear()
 
-        # 1. Setup Pac-Man Sprite
-        pacman_path = self.sprite_manager.get_pacman_sprites(self.entity_manager.pacman)[0]
-        self.pacman_sprite = arcade.Sprite(arcade.load_texture(pacman_path))
-        self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
+        # 1. Setup Pac-Man Sprite (TEMPORARILY DISABLED until p1.png exists)
+        # pacman_path = self.sprite_manager.get_pacman_sprites(self.entity_manager.pacman)[0]
+        # self.pacman_sprite = arcade.Sprite(arcade.load_texture(pacman_path))
+        # self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
+        self.pacman_sprite = None
 
         # 2. Setup Ghost Sprites using temp_get_wake
         for ghost in self.entity_manager.ghosts:
@@ -378,9 +384,20 @@ class GameView(arcade.View):
             ghost_sprite = arcade.Sprite(arcade.load_texture(wake_path))
             ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
 
-            # Store mapping in view dictionary
-            self.ghost_sprite_map[ghost] = ghost_sprite
+            self.ghost_sprite_map[id(ghost)] = ghost_sprite
             self.ghost_sprites.append(ghost_sprite)
+
+    def on_resize(self, width: int, height: int):
+        super().on_resize(width, height)  # Updates view projection matrix
+
+        # Recalculate your grid offsets and cell size
+        self.calculate_render_params()
+
+        # Rescale existing sprites so they fit the updated cell size
+        for ghost_sprite in self.ghost_sprites:
+            ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
+        if self.pacman_sprite:
+            self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
