@@ -1,6 +1,5 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
-
 from math import dist
 import random
 from collections import deque
@@ -171,9 +170,6 @@ class Ghost(Token, ABC):
 
     # Directly traces the shortest path to the target
     def _get_bfs_direction(self, delta_time: float) -> None:
-        # if not self.spawn_snapped:
-        #     if self._check_eaten_arrival(delta_time) and self.respawn_timer:
-        #         return
         if self.spawn_snapped:
             self.direction = None
             self.buffered_direction = None

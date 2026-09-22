@@ -73,7 +73,6 @@ class EntityManager:
 
     # Resets all token positions
     def reset_positions(self) -> None:
-
         self.pacman.coordinates = self.pacman.init_coord
         assert isinstance(self.pacman.init_coord, tuple)
         py, px = self.pacman.init_coord
