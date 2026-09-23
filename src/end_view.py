@@ -28,12 +28,10 @@ class EndView(arcade.View):
         if self.is_victory:
             title = "YOU WIN!!"
             msg = "Congrats! The ghosts filed a complaint. Name please:"
-            image = "👻👻👻"
             color = arcade.color.GREEN
         else:
             title = "GAME OVER..."
             msg = "Who should we blame for this score"
-            image = "💀💀💀"
             color = arcade.color.ORANGE
         arcade.draw_text(
             title,
@@ -54,18 +52,9 @@ class EndView(arcade.View):
             bold=True
         )
         arcade.draw_text(
-            image,
-            self.window.width / 2,
-            self.window.height * 0.85 - 300,
-            arcade.color.WHITE,
-            20,
-            anchor_x="center",
-            bold=True
-        )
-        arcade.draw_text(
             msg,
             self.window.width / 2,
-            self.window.height * 0.85 - 400,
+            self.window.height * 0.85 - 350,
             arcade.color.WHITE,
             20,
             anchor_x="center",
