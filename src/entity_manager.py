@@ -82,7 +82,7 @@ class EntityManager:
             assert isinstance(ghost.init_coord, tuple)
             gy, gx = ghost.init_coord
             ghost.current_cell = self.grid.get_cell(int(gy), int(gx))
-        self.set_ghost_states(ent.Gs.SCATTER)
+
 
     # Update Ghost behaviors regarding Delta Time
     def _update_ghost_states(self, delta_time: float) -> None:
