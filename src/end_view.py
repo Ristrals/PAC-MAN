@@ -36,7 +36,7 @@ class EndView(arcade.View):
         arcade.draw_text(
             title,
             self.window.width / 2,
-            self.window.height * 0.85 - 200,
+            self.window.height * 0.58,
             color,
             50,
             anchor_x="center",
@@ -45,7 +45,7 @@ class EndView(arcade.View):
         arcade.draw_text(
             f"FINAL SCORE: {self.score}",
             self.window.width / 2,
-            self.window.height * 0.85 - 250,
+            self.window.height * 0.50,
             arcade.color.WHITE,
             20,
             anchor_x="center",
@@ -54,7 +54,7 @@ class EndView(arcade.View):
         arcade.draw_text(
             msg,
             self.window.width / 2,
-            self.window.height * 0.85 - 350,
+            self.window.height * 0.35,
             arcade.color.WHITE,
             20,
             anchor_x="center",
