@@ -64,14 +64,14 @@ class EndView(arcade.View):
     def draw_input(self):
         arcade.draw_lbwh_rectangle_filled(
             (self.window.width - 300) / 2,
-            self.window.height / 2 - 200,
+            self.window.height * 0.20,
             300,
             50,
             arcade.color.GRAY
         )
         arcade.draw_lbwh_rectangle_outline(
             (self.window.width - 300) / 2,
-            self.window.height / 2 - 200,
+            self.window.height * 0.20,
             300,
             50,
             arcade.color.WHITE,
@@ -81,7 +81,7 @@ class EndView(arcade.View):
         arcade.draw_text(
             display_text,
             self.window.width / 2,
-            self.window.height / 2 - 200 + 15,
+            self.window.height * 0.2 + 15,
             arcade.color.WHITE,
             20,
             anchor_x="center"
