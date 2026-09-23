@@ -78,10 +78,13 @@ class EntityManager:
         py, px = self.pacman.init_coord
         self.pacman.current_cell = self.grid.get_cell(int(py), int(px))
         for ghost in self.ghosts:
+            ghost.direction = None
+            ghost.buffered_direction = None
             ghost.coordinates = ghost.init_coord
             assert isinstance(ghost.init_coord, tuple)
             gy, gx = ghost.init_coord
             ghost.current_cell = self.grid.get_cell(int(gy), int(gx))
+            ghost.initiate_movement()
 
 
     # Update Ghost behaviors regarding Delta Time
