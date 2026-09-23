@@ -26,7 +26,6 @@ class GameView(arcade.View):
         self.selected = 0
         self.score = 0
 
-        #WiP
         self.sprite_manager = SpriteManager()
         self.ghost_sprites: arcade.SpriteList = arcade.SpriteList()
         self.ghost_sprite_map: dict[int, arcade.Sprite] = {}
@@ -171,9 +170,10 @@ class GameView(arcade.View):
         for ghost in self.entity_manager.ghosts:
             ghost_sprite = self.ghost_sprite_map.get(id(ghost))
             if ghost_sprite:
+                paths = self.sprite_manager.get_ghost_sprites(ghost)
                 ghost_sprite.center_x = self.offset_x + ghost.x * self.cell_size
                 ghost_sprite.center_y = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
-
+                ghost_sprite.texture = arcade.load_texture(paths[0])
         # Batch draw all ghost sprites
         self.ghost_sprites.draw()
 
@@ -407,6 +407,7 @@ class GameView(arcade.View):
             ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
         if self.pacman_sprite:
             self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
+
 
 if __name__ == "__main__":
     config = load_config("data/configuration.json")
