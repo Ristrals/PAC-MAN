@@ -166,8 +166,4 @@ class EntityManager:
         ghost.state = self._base_behavior
         ghost.speed = self._base_behavior.value[1] * self.base_speed
         ghost.spawn_snapped = False
-        for direction in Mvt:
-            if ghost.current_cell.can_exit(direction):
-                ghost.direction = direction
-                ghost.buffered_direction = direction
-                break
+        ghost.initiate_movement()
