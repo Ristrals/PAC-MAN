@@ -14,6 +14,7 @@ class GameView(arcade.View):
         super().__init__()
         self.config = config
         self.current_level = 1
+        self.start = False
         self.is_all_empty = False
         self.pause = False
         self.cheat_mode = False
@@ -45,6 +46,7 @@ class GameView(arcade.View):
         self.entity_manager.pacman.is_invincible = self.invincible
         self.entity_manager.ghost_freeze = self.ghost_freeze
         self.time_left = self.config.level_max_time
+        self.start = False
         self.calculate_render_params()
 
     def next_level(self):
@@ -322,18 +324,23 @@ class GameView(arcade.View):
 
         # pacman move
         if key == arcade.key.UP:
+            self.start = True
             self.entity_manager.pacman.buffered_direction = Movements.UP
         elif key == arcade.key.DOWN:
+            self.start = True
             self.entity_manager.pacman.buffered_direction = Movements.DOWN
         elif key == arcade.key.LEFT:
+            self.start = True
             self.entity_manager.pacman.buffered_direction = Movements.LEFT
         elif key == arcade.key.RIGHT:
+            self.start = True
             self.entity_manager.pacman.buffered_direction = Movements.RIGHT
 
     def on_update(self, delta_time):
         if self.pause or self.cheat_mode:
             return
-        self.time_left -= delta_time
+        if self.start:
+            self.time_left -= delta_time
         summary = self.entity_manager.update(delta_time)
         if summary.eat_pacgum:
             self.score += self.config.points_per_pacgum
