@@ -362,6 +362,7 @@ class GameView(arcade.View):
             self.score += self.config.points_per_ghost * count
         if summary.defeated:
             self.lives -= 1
+            self.start = False
             if self.lives <= 0:
                 self.window.show_view(EndView(self.score, self.config, False))
                 return
