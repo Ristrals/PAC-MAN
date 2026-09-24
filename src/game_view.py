@@ -395,6 +395,7 @@ class GameView(arcade.View):
 
     def setup_sprites(self) -> None:
         """Creates Arcade sprites using pre-loaded textures from SpriteManager."""
+        self.pacman_sprite_list.clear()
         self.ghost_sprites.clear()
         self.ghost_sprite_map.clear()
 
