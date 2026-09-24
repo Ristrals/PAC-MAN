@@ -44,15 +44,14 @@ class EntityManager:
                 ghost.move(delta_time, self.grid)
 
         # Check if pacman is centered on a pacgum cell
-        if self.pacman.is_cell_centered():
-            match self.pacman.current_cell.state_type:
-                case St.PACGUM:
-                    summary.eat_pacgum = True
-                    self.pacman.current_cell.state_type = St.EMPTY
-                case St.SUPER_PACGUM:
-                    summary.eat_superpacgum = True
-                    self.set_ghost_states(ent.Gs.FRIGHTENED)
-                    self.pacman.current_cell.state_type = St.EMPTY
+        match self.pacman.current_cell.state_type:
+            case St.PACGUM:
+                summary.eat_pacgum = True
+                self.pacman.current_cell.state_type = St.EMPTY
+            case St.SUPER_PACGUM:
+                summary.eat_superpacgum = True
+                self.set_ghost_states(ent.Gs.FRIGHTENED)
+                self.pacman.current_cell.state_type = St.EMPTY
 
         # Solve collisions
         if not self.pacman.is_invincible:
