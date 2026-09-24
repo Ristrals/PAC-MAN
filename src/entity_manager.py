@@ -134,10 +134,10 @@ class EntityManager:
     def _initialize_tokens(self) -> None:
         pacman_pos: Cell = self.grid.get_center_position()
         ghosts_pos: list[Cell] = [
-            self.grid.get_cell(1, 1),
-            self.grid.get_cell(1, self.grid.width - 1),
-            self.grid.get_cell(self.grid.height - 1, self.grid.width - 1),
-            self.grid.get_cell(self.grid.height - 1, 1)
+            self.grid.get_cell(0, 0),
+            self.grid.get_cell(0, self.grid.width),
+            self.grid.get_cell(self.grid.height, self.grid.width),
+            self.grid.get_cell(self.grid.height, 0)
         ]
 
         # Placing Pacman
