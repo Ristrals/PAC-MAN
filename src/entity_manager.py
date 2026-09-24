@@ -23,8 +23,8 @@ class EntityManager:
 
         # Game timer attributes
         self._timer: float = 0.0
-        self._frighten_timer: float = 0.0
-        self._current_behavior: ent.Gs = ent.Gs.CHASE
+        self.frighten_timer: float = 0.0
+        self.current_behavior: ent.Gs = ent.Gs.CHASE
         self._base_behavior: ent.Gs = ent.Gs.CHASE
         self.ghost_freeze: bool = False
         self._initialize_tokens()
@@ -94,15 +94,15 @@ class EntityManager:
                 if ghost.respawn_timer <= 0.0:
                     self._respawn_ghost(ghost)
 
-        if self._current_behavior == ent.Gs.FRIGHTENED:
-            self._frighten_timer -= delta_time
-            if self._frighten_timer <= 0.0:
+        if self.current_behavior == ent.Gs.FRIGHTENED:
+            self.frighten_timer -= delta_time
+            if self.frighten_timer <= 0.0:
                 self.set_ghost_states(self._base_behavior)
             return
 
         self._timer -= delta_time
         if self._timer <= 0.0:
-            match self._current_behavior:
+            match self.current_behavior:
                 case ent.Gs.CHASE:
                     self._base_behavior = ent.Gs.SCATTER
                     self.set_ghost_states(ent.Gs.SCATTER)
@@ -114,11 +114,11 @@ class EntityManager:
     def set_ghost_states(self, ghost_state: ent.Gs) -> None:
         match ghost_state:
             case (ent.Gs.CHASE | ent.Gs.SCATTER):
-                if self._current_behavior != ent.Gs.FRIGHTENED:
+                if self.current_behavior != ent.Gs.FRIGHTENED:
                     self._timer = ghost_state.value[2]
             case ent.Gs.FRIGHTENED:
-                self._frighten_timer = ghost_state.value[2]
-        self._current_behavior = ghost_state
+                self.frighten_timer = ghost_state.value[2]
+        self.current_behavior = ghost_state
         for ghost in self.ghosts:
             if ghost.state != ent.Gs.EATEN:
                 ghost.state = ghost_state
