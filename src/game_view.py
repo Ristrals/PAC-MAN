@@ -26,9 +26,11 @@ class GameView(arcade.View):
         self.selected = 0
         self.score = 0
 
+        self.animation_timer = 0.0
         self.sprite_manager = SpriteManager()
         self.ghost_sprites: arcade.SpriteList = arcade.SpriteList()
         self.ghost_sprite_map: dict[int, arcade.Sprite] = {}
+        self.pacman_sprite_list: arcade.SpriteList = arcade.SpriteList()
         self.pacman_sprite: arcade.Sprite | None = None
 
         self.load_level()
@@ -149,32 +151,45 @@ class GameView(arcade.View):
                     )
 
     def draw_token(self):
-        # 1. Calculate Pac-Man position matching original math
+        # 0. Calculate animation frame index (toggles between 0 and 1 at ~8 FPS)
+        frame_idx = 0 if int(self.animation_timer * 8) % 2 == 0 else 1
+
+        # 1. Update and Draw Pac-Man
         pacman = self.entity_manager.pacman
-        center_x = self.offset_x + pacman.x * self.cell_size
-        center_y = self.offset_y + (self.grid.height - pacman.y) * self.cell_size
+        pac_center_x = self.offset_x + pacman.x * self.cell_size
+        pac_center_y = self.offset_y + (self.grid.height - pacman.y) * self.cell_size
 
         if self.pacman_sprite:
-            self.pacman_sprite.center_x = center_x
-            self.pacman_sprite.center_y = center_y
-            self.pacman_sprite.draw()
+            pac_textures = self.sprite_manager.get_pacman_sprites(pacman)
+            # Cycle through Pac-Man's 3 mouth frames
+            pac_frame_idx = int(self.animation_timer * 12) % len(pac_textures)
+            self.pacman_sprite.texture = pac_textures[pac_frame_idx]
+
+            self.pacman_sprite.center_x = pac_center_x
+            self.pacman_sprite.center_y = pac_center_y
+            self.pacman_sprite_list.draw()
         else:
             arcade.draw_circle_filled(
-                center_x,
-                center_y,
+                pac_center_x,
+                pac_center_y,
                 self.cell_size * 0.4,
                 arcade.color.YELLOW
             )
 
-        # 2. Update and Draw Ghost Sprites
+        # 2. Update Ghost Sprites
         for ghost in self.entity_manager.ghosts:
             ghost_sprite = self.ghost_sprite_map.get(id(ghost))
             if ghost_sprite:
-                paths = self.sprite_manager.get_ghost_sprites(ghost)
+                ghost_textures = self.sprite_manager.get_ghost_sprites(ghost)
+
                 ghost_sprite.center_x = self.offset_x + ghost.x * self.cell_size
                 ghost_sprite.center_y = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
-                ghost_sprite.texture = arcade.load_texture(paths[0])
-        # Batch draw all ghost sprites
+
+                # Select frame 0 or 1 safely (falls back to 0 for single-frame lists like eyes)
+                selected_idx = frame_idx if len(ghost_textures) > 1 else 0
+                ghost_sprite.texture = ghost_textures[selected_idx]
+
+        # Batch draw all ghost sprites in a single draw call
         self.ghost_sprites.draw()
 
     def draw_cheat_panel(self):
@@ -350,6 +365,7 @@ class GameView(arcade.View):
     def on_update(self, delta_time):
         if self.pause or self.cheat_mode:
             return
+        self.animation_timer += delta_time
         if self.start:
             self.time_left -= delta_time
         summary = self.entity_manager.update(delta_time)
@@ -377,37 +393,45 @@ class GameView(arcade.View):
         if self.time_left <= 0:
             self.window.show_view(EndView(self.score, self.config, False))
 
-    def setup_sprites(self):
-        """Creates Arcade sprites using wake placeholders for ghosts."""
+    def setup_sprites(self) -> None:
+        """Creates Arcade sprites using pre-loaded textures from SpriteManager."""
         self.ghost_sprites.clear()
         self.ghost_sprite_map.clear()
 
-        # 1. Setup Pac-Man Sprite (TEMPORARILY DISABLED until p1.png exists)
-        # pacman_path = self.sprite_manager.get_pacman_sprites(self.entity_manager.pacman)[0]
-        # self.pacman_sprite = arcade.Sprite(arcade.load_texture(pacman_path))
-        # self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
-        self.pacman_sprite = None
+        pacman = self.entity_manager.pacman
+        pac_textures = self.sprite_manager.get_pacman_sprites(pacman)
 
-        # 2. Setup Ghost Sprites using temp_get_wake
+        # Pass pac_textures[0] directly as a positional argument:
+        self.pacman_sprite = arcade.Sprite(pac_textures[0])
+
+        base_dim = max(self.pacman_sprite.texture.width, self.pacman_sprite.texture.height)
+        self.pacman_sprite.scale = (self.cell_size * 0.8) / base_dim
+        self.pacman_sprite.center_x = self.offset_x + pacman.x * self.cell_size
+        self.pacman_sprite.center_y = self.offset_y + (self.grid.height - pacman.y) * self.cell_size
+        self.pacman_sprite_list.append(self.pacman_sprite)
+
         for ghost in self.entity_manager.ghosts:
-            wake_path = self.sprite_manager.temp_get_wake(ghost)
-            ghost_sprite = arcade.Sprite(arcade.load_texture(wake_path))
-            ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
+            ghost_textures = self.sprite_manager.get_ghost_sprites(ghost)
 
+            # Pass ghost_textures[0] directly as a positional argument:
+            ghost_sprite = arcade.Sprite(ghost_textures[0])
+
+            base_dim = max(ghost_sprite.texture.width, ghost_sprite.texture.height)
+            ghost_sprite.scale = (self.cell_size * 0.8) / base_dim
+            ghost_sprite.center_x = self.offset_x + ghost.x * self.cell_size
+            ghost_sprite.center_y = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
             self.ghost_sprite_map[id(ghost)] = ghost_sprite
             self.ghost_sprites.append(ghost_sprite)
 
     def on_resize(self, width: int, height: int):
-        super().on_resize(width, height)  # Updates view projection matrix
-
-        # Recalculate your grid offsets and cell size
+        super().on_resize(width, height)
         self.calculate_render_params()
-
-        # Rescale existing sprites so they fit the updated cell size
         for ghost_sprite in self.ghost_sprites:
-            ghost_sprite.scale = (self.cell_size * 0.8) / max(ghost_sprite.width, ghost_sprite.height)
+            base_dim = max(ghost_sprite.texture.width, ghost_sprite.texture.height)
+            ghost_sprite.scale = (self.cell_size * 0.8) / base_dim
         if self.pacman_sprite:
-            self.pacman_sprite.scale = (self.cell_size * 0.8) / max(self.pacman_sprite.width, self.pacman_sprite.height)
+            base_dim = max(self.pacman_sprite.texture.width, self.pacman_sprite.texture.height)
+            self.pacman_sprite.scale = (self.cell_size * 0.8) / base_dim
 
 
 if __name__ == "__main__":
