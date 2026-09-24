@@ -82,5 +82,5 @@ class SpriteManager:
             self.pacman_last_direction = pacman.direction
             return self.pacman_textures[pacman.direction]
         if self.pacman_last_direction:
-            return [self.pacman_textures[self.pacman_last_direction][0]]
+            return [self.pacman_textures[self.pacman_last_direction][1]]
         return [self.pacman_textures[Mvt.LEFT][0]]
