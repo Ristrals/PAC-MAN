@@ -1,6 +1,8 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
 from pathlib import Path
+from unittest import case
+
 from src.data_lib import Movements as Mvt
 from src.entity import Ghost, Gs
 from src.entity import Pacman
@@ -16,10 +18,10 @@ class SpriteManager:
         self.clyde_dir: Path = self.assets_dir / "clyde"
         self.eyes_dir: Path = self.assets_dir / "eyes"
         self.pacman: list[str] = [
-            "p1.png", "p2.png",
-            "p3.png", "p4.png",
-            "pu1.png", "pu2.png",
-            "pu3.png", "pu4.png",
+            "up1.png", "up2.png", "up3.png",
+            "left1.png", "left2.png", "left3.png",
+            "right1.png", "right2.png", "right3.png",
+            "down1.png", "down2.png", "down3.png",
         ]
         self.ghost: list[str] = [
             "down1.png", "down2.png",
@@ -65,9 +67,15 @@ class SpriteManager:
         return [ghost_folder / self.ghost[x], ghost_folder / self.ghost[y]]
 
     def get_pacman_sprites(self, pacman: Pacman) -> list[Path]:
-        if pacman.is_powered_up:
-            return [self.pacman_dir / self.pacman[x] for x in range(4, 8)]
-        return [self.pacman_dir / self.pacman[x] for x in range(0, 4)]
+        sprites: list[Path] = []
+        x: int = 0
+        y: int = 0
+        match pacman.direction:
+            case Mvt.UP: x, y = 0, 2
+            case Mvt.LEFT: x, y = 3, 5
+            case Mvt.RIGHT: x, y = 6, 8
+            case Mvt.DOWN: x, y = 9, 11
+        for
 
     def temp_get_wake(self, ghost: Ghost) -> Path:
         ghost_name = type(ghost).__name__.lower()
