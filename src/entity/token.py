@@ -48,9 +48,10 @@ class Token(BaseModel, ABC):
     # Check if token is at cell center
     def is_cell_centered(self) -> bool:
         cy, cx = self.current_cell.coordinates
-        if isclose(self.y, cy + 0.5, abs_tol=0.08) and isclose(self.x, cx + 0.5, abs_tol=0.08):
-            return True
-        return False
+        return (
+            isclose(self.y, cy + 0.5, abs_tol=0.08) and
+            isclose(self.x, cx + 0.5, abs_tol=0.08)
+        )
 
     # Return if the entity is allowed to move in current direction
     def can_move(self, direction: Mvt | None) -> bool:
