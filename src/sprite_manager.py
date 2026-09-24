@@ -1,6 +1,8 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
 from pathlib import Path
+from unittest import async_case
+
 import arcade
 from src.data_lib import Movements as Mvt
 from src.entity import Ghost, Gs, Pacman
@@ -14,6 +16,7 @@ class SpriteManager:
         self.eyes_textures: dict[Mvt, arcade.Texture] = {}
         self._load_eyes_textures()
         self.pacman_textures: dict[Mvt, list[arcade.Texture]] = {}
+        self.pacman_last_direction: Mvt | None = None
         self._load_pacman_textures()
 
     def _load_ghost_textures(self) -> None:
@@ -76,5 +79,8 @@ class SpriteManager:
 
     def get_pacman_sprites(self, pacman: Pacman) -> list[arcade.Texture]:
         if pacman.direction:
+            self.pacman_last_direction = pacman.direction
             return self.pacman_textures[pacman.direction]
+        if self.pacman_last_direction:
+            return [self.pacman_textures[self.pacman_last_direction][0]]
         return [self.pacman_textures[Mvt.LEFT][0]]
