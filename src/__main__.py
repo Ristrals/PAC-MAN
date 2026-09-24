@@ -1,8 +1,6 @@
 import sys
 from src.config import load_config
 from src.main_menu import MainMenuView
-
-
 import arcade
 
 
