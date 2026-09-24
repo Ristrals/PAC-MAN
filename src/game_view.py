@@ -177,19 +177,36 @@ class GameView(arcade.View):
             )
 
         # 2. Update Ghost Sprites
+        frighten_timer = self.entity_manager.frighten_timer
+        is_frightened = self.entity_manager.current_behavior == entity.Gs.FRIGHTENED
+
         for ghost in self.entity_manager.ghosts:
             ghost_sprite = self.ghost_sprite_map.get(id(ghost))
             if ghost_sprite:
                 ghost_textures = self.sprite_manager.get_ghost_sprites(ghost)
-
                 ghost_sprite.center_x = self.offset_x + ghost.x * self.cell_size
                 ghost_sprite.center_y = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
 
-                # Select frame 0 or 1 safely (falls back to 0 for single-frame lists like eyes)
-                selected_idx = frame_idx if len(ghost_textures) > 1 else 0
+                # EATEN & SLEEPING AT SPAWN
+                if ghost.state == entity.Gs.EATEN and ghost.spawn_snapped:
+                    # While respawn_timer counts down from 5.0 to 0.0:
+                    if ghost.respawn_timer > 2.0:
+                        # First 3 seconds: static sleeping frame
+                        selected_idx = 0
+                    else:
+                        # Final 2 seconds: alternate/flash frames at ~8 FPS
+                        selected_idx = 0 if int(self.animation_timer * 8) % 2 == 0 else 1
+
+                # STANDARD (CHASE / SCATTER / EATEN RETURNING EYES)
+                else:
+                    selected_idx = frame_idx if len(ghost_textures) > 1 else 0
+
+                # Bounds guard in case a state list only returns 1 texture
+                if selected_idx >= len(ghost_textures):
+                    selected_idx = 0
+
                 ghost_sprite.texture = ghost_textures[selected_idx]
 
-        # Batch draw all ghost sprites in a single draw call
         self.ghost_sprites.draw()
 
     def draw_cheat_panel(self):
