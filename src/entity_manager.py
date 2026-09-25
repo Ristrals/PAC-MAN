@@ -36,10 +36,10 @@ class EntityManager:
 
         # All token move
         self.pacman.move(delta_time, self.grid)
-        print(self.pacman)
+        # print(self.pacman)
         if not self.ghost_freeze:
             for ghost in self.ghosts:
-                print(ghost)
+                # print(ghost)
                 ghost.update_buffered_direction(delta_time)
                 ghost.move(delta_time, self.grid)
 
@@ -132,6 +132,7 @@ class EntityManager:
                             ghost.initiate_movement()
                 ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
+    # Initializes all tokens
     def _initialize_tokens(self) -> None:
         pacman_pos: Cell = self.grid.get_center_position()
         ghosts_pos: list[Cell] = [
