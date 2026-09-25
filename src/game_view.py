@@ -7,6 +7,7 @@ from src.entity_manager import EntityManager
 from src.sprite_manager import SpriteManager
 from src import entity
 
+import math
 import arcade
 
 
@@ -182,26 +183,29 @@ class GameView(arcade.View):
 
         for ghost in self.entity_manager.ghosts:
             ghost_sprite = self.ghost_sprite_map.get(id(ghost))
+            ghost_sprite.alpha = 255
             if ghost_sprite:
                 ghost_textures = self.sprite_manager.get_ghost_sprites(ghost)
                 ghost_sprite.center_x = self.offset_x + ghost.x * self.cell_size
                 ghost_sprite.center_y = self.offset_y + (self.grid.height - ghost.y) * self.cell_size
 
-                # EATEN & SLEEPING AT SPAWN
                 if ghost.state == entity.Gs.EATEN and ghost.spawn_snapped:
-                    # While respawn_timer counts down from 5.0 to 0.0:
                     if ghost.respawn_timer > 2.0:
-                        # First 3 seconds: static sleeping frame
                         selected_idx = 0
                     else:
-                        # Final 2 seconds: alternate/flash frames at ~8 FPS
                         selected_idx = 0 if int(self.animation_timer * 8) % 2 == 0 else 1
 
-                # STANDARD (CHASE / SCATTER / EATEN RETURNING EYES)
+                elif ghost.state == entity.Gs.FRIGHTENED:
+                    frighten_timer = self.entity_manager.frighten_timer
+                    if frighten_timer > 2.0:
+                        selected_idx = frame_idx if len(ghost_textures) > 1 else 0
+                    else:
+                        selected_idx = 0
+                        sink_val = math.sin(self.animation_timer * 15.0)
+                        ghost_sprite.alpha = int(137 + 118 * sink_val)
                 else:
                     selected_idx = frame_idx if len(ghost_textures) > 1 else 0
 
-                # Bounds guard in case a state list only returns 1 texture
                 if selected_idx >= len(ghost_textures):
                     selected_idx = 0
 
