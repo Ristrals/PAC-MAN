@@ -11,7 +11,6 @@ class ParsingError(Exception):
 
 # ScoreManager Error types
 class ScoreErrorType(Enum):
-    # (err_type, is_critical)
     FILE_NOT_FOUND = ("file_not_found", False)
     DIR_NOT_FOUND = ("dir_not_found", False)
     SCHEMA_INVALID = ("schema_invalid", False)
@@ -52,17 +51,16 @@ class ScoreError(Exception):
 
         if self._err_type == "file_not_found":
             self._err_message += (f"{Tc.ylw}File 'highscores.json' could not be found{Tc.clr}\n"
-                                  f"{Tc.red}[!]Scores will be exported in a temporary file{Tc.clr}\n")
+                                  f"{Tc.red}[!]Previous scores will be saved in a temporary file{Tc.clr}\n")
 
         if self._err_type == "dir_not_found":
             self._err_message += (f"{Tc.ylw}Directory 'data' could not be found{Tc.clr}\n"
-                                  f"{Tc.red}[!]Scores will be exported in a temporary file{Tc.clr}\n")
+                                  f"{Tc.red}[!]Previous scores will be saved in a temporary file{Tc.clr}\n")
 
         if self._err_type in ("schema_invalid", "missing"):
             assert isinstance(self._score_error, ValidationError)
             if len(self._score_error.errors()) >= 0:
                 error = self._score_error.errors()[0]
-                # print(self._score_error.errors())  # To be removed
                 _input = str(error.get('input', ''))
                 location_tuple = error.get('loc', ())
 
@@ -98,10 +96,10 @@ class ScoreError(Exception):
                 # print(self._score_error.errors())  # To be removed
                 _msg = f"{self._score_error.errors()[0]['msg']}"
                 self._err_message += f"{Tc.ylw}{_msg}.{Tc.clr}\n"
-                self._err_message += f"{Tc.red}[!]Scores will be exported in a temporary file{Tc.clr}\n"
+                self._err_message += f"{Tc.red}[!]Previous scores will be saved in a temporary file{Tc.clr}\n"
             else:
                 self._err_message += (f"{Tc.ylw}JSON data corrupted.{Tc.clr}\n"
-                                      f"{Tc.red}[!]Scores will be exported in a temporary file{Tc.clr}\n")
+                                      f"{Tc.red}[!]Previous scores will be saved in a temporary file{Tc.clr}\n")
 
         return self._err_message
 
