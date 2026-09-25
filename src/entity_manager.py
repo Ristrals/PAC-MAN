@@ -79,6 +79,8 @@ class EntityManager:
         for ghost in self.ghosts:
             ghost.direction = None
             ghost.buffered_direction = None
+            ghost.respawn_timer = 0.0
+            ghost.state = self._base_behavior
             ghost.coordinates = ghost.init_coord
             assert isinstance(ghost.init_coord, tuple)
             gy, gx = ghost.init_coord
