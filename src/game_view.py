@@ -178,9 +178,6 @@ class GameView(arcade.View):
             )
 
         # 2. Update Ghost Sprites
-        frighten_timer = self.entity_manager.frighten_timer
-        is_frightened = self.entity_manager.current_behavior == entity.Gs.FRIGHTENED
-
         for ghost in self.entity_manager.ghosts:
             ghost_sprite = self.ghost_sprite_map.get(id(ghost))
             ghost_sprite.alpha = 255

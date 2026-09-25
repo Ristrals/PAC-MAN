@@ -9,6 +9,7 @@ from enum import Enum
 class ParsingError(Exception):
     """Raised when the input map file has invalid syntax."""
 
+
 # ScoreManager Error types
 class ScoreErrorType(Enum):
     FILE_NOT_FOUND = ("file_not_found", False)
@@ -28,6 +29,7 @@ class ScoreErrorType(Enum):
     @property
     def is_critical(self) -> bool:
         return self._is_critical
+
 
 class ScoreError(Exception):
 

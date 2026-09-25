@@ -5,7 +5,6 @@ from math import dist
 import src.entity as ent
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
-from src.data_lib import Movements as Mvt
 
 
 @dataclass
@@ -86,7 +85,6 @@ class EntityManager:
             gy, gx = ghost.init_coord
             ghost.current_cell = self.grid.get_cell(int(gy), int(gx))
             ghost.initiate_movement()
-
 
     # Update Ghost behaviors regarding Delta Time
     def _update_ghost_states(self, delta_time: float) -> None:

@@ -22,7 +22,7 @@ class Score(BaseModel):
         except ValidationError as ve:
             for err in ve.errors():
                 val_error_type = err['type']
-                val_error_loc =  err['loc']
+                val_error_loc = err['loc']
                 if val_error_type == "json_invalid":
                     raise ScErr(ScErrType.JSON_CORRUPT, ve, entry_index=entry_index)
                 if val_error_type == "missing":
@@ -164,8 +164,8 @@ class ScoreManager:
 
 if __name__ == "__main__":
     gaspard: dict = {
-        "name" : "Gaspard",
-        "score" : 164
+        "name": "Gaspard",
+        "score": 164
     }
     jun: dict = {
         "name": "Jun",
