@@ -16,7 +16,7 @@ class Score(BaseModel):
     score: Annotated[int, Field(ge=0, le=99999, alias="score")]
 
     @classmethod
-    def validation_mitigation(cls, entry_index: int | None = None, **data) -> 'Score':
+    def validation_mitigation(cls, entry_index: int | None = None, **data: Any) -> 'Score':
         try:
             return cls(**data)
         except ValidationError as ve:

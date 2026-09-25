@@ -12,7 +12,7 @@ import arcade
 
 
 class GameView(arcade.View):
-    def __init__(self, config: GameConfig):
+    def __init__(self, config: GameConfig) -> None:
         super().__init__()
         self.config = config
         self.current_level = 1
@@ -36,14 +36,14 @@ class GameView(arcade.View):
 
         self.load_level()
 
-    def calculate_render_params(self):
+    def calculate_render_params(self) -> None:
         cell_size_w = (self.window.width * 0.6) / self.grid.width
         cell_size_h = (self.window.height * 0.6) / self.grid.height
         self.cell_size = min(cell_size_w, cell_size_h)
         self.offset_x = (self.window.width - self.grid.width * self.cell_size) / 2
         self.offset_y = (self.window.height - self.grid.height * self.cell_size) / 2
 
-    def load_level(self):
+    def load_level(self) -> None:
         level_config = self.config.levels[self.current_level - 1]
         seed = self.config.seed if self.current_level == 1 else None
         self.grid = Grid(
@@ -60,14 +60,14 @@ class GameView(arcade.View):
         self.calculate_render_params()
         self.setup_sprites()
 
-    def next_level(self):
+    def next_level(self) -> None:
         self.current_level += 1
         if self.current_level > len(self.config.levels):
             self.window.show_view(EndView(self.score, self.config, True))
             return
         self.load_level()
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.clear()
         self.draw_maze()
         self.draw_items()
@@ -79,7 +79,7 @@ class GameView(arcade.View):
         if self.cheat_mode:
             self.draw_cheat_panel()
 
-    def draw_maze(self):
+    def draw_maze(self) -> None:
         for row in self.grid.grid:
             for cell in row:
                 px = self.offset_x + cell.x * self.cell_size
@@ -129,7 +129,7 @@ class GameView(arcade.View):
                         1
                     )
 
-    def draw_items(self):
+    def draw_items(self) -> None:
         for row in self.grid.grid:
             for cell in row:
                 px = self.offset_x + cell.x * self.cell_size
@@ -151,7 +151,7 @@ class GameView(arcade.View):
                         arcade.color.YELLOW
                     )
 
-    def draw_token(self):
+    def draw_token(self) -> None:
         # 0. Calculate animation frame index (toggles between 0 and 1 at ~8 FPS)
         frame_idx = 0 if int(self.animation_timer * 8) % 2 == 0 else 1
 
@@ -210,7 +210,7 @@ class GameView(arcade.View):
 
         self.ghost_sprites.draw()
 
-    def draw_cheat_panel(self):
+    def draw_cheat_panel(self) -> None:
         arcade.draw_lbwh_rectangle_filled(
             0,
             0,
@@ -235,7 +235,7 @@ class GameView(arcade.View):
                 bold=True
             )
 
-    def draw_hud(self):
+    def draw_hud(self) -> None:
         arcade.draw_text(
             "❤️" * self.lives,
             self.window.width / 10,
@@ -269,7 +269,7 @@ class GameView(arcade.View):
             anchor_x="center"
         )
 
-    def draw_pause_menu(self):
+    def draw_pause_menu(self) -> None:
         arcade.draw_lbwh_rectangle_filled(
             0,
             0,
@@ -294,7 +294,7 @@ class GameView(arcade.View):
                 bold=True
             )
 
-    def draw_page(self):
+    def draw_page(self) -> None:
         arcade.draw_lbwh_rectangle_filled(
             0,
             0,
@@ -327,7 +327,7 @@ class GameView(arcade.View):
             anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key, modifiers) -> None:
         # pause menu
         if key == arcade.key.P:
             self.pause = not self.pause
@@ -380,7 +380,7 @@ class GameView(arcade.View):
             self.start = True
             self.entity_manager.pacman.buffered_direction = Movements.RIGHT
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time) -> None:
         if self.pause or self.cheat_mode or not self.start:
             return
         dt = min(delta_time, 1 / 30.0)
@@ -443,7 +443,7 @@ class GameView(arcade.View):
             self.ghost_sprite_map[id(ghost)] = ghost_sprite
             self.ghost_sprites.append(ghost_sprite)
 
-    def on_resize(self, width: int, height: int):
+    def on_resize(self, width: int, height: int) -> None:
         super().on_resize(width, height)
         self.calculate_render_params()
         for ghost_sprite in self.ghost_sprites:

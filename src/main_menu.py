@@ -7,7 +7,7 @@ import arcade
 
 
 class MainMenuView(arcade.View):
-    def __init__(self, config: GameConfig):
+    def __init__(self, config: GameConfig) -> None:
         super().__init__()
         self.options = ["Start", "Exit"]
         self.selected = 0
@@ -18,7 +18,7 @@ class MainMenuView(arcade.View):
             self.score_manager = None
         self.config = config
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.clear()
         arcade.draw_text(
             "PAC-MAN",
@@ -115,7 +115,7 @@ class MainMenuView(arcade.View):
             anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key, modifiers) -> None:
         if key == arcade.key.LEFT:
             self.selected = 0
         elif key == arcade.key.RIGHT:
