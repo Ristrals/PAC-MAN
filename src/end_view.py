@@ -14,7 +14,7 @@ class EndView(arcade.View):
         self.player_name = ""
         self.max_name_length = 10
         try:
-            self.score_manager = ScoreManager(config.highscore_filename)
+            self.score_manager: ScoreManager | None = ScoreManager(config.highscore_filename)
         except Exception as e:
             print(e)
             self.score_manager = None
@@ -87,7 +87,7 @@ class EndView(arcade.View):
             anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers) -> None:
+    def on_key_press(self, key: int, modifiers: int) -> None:
         char = chr(key) if 32 <= key <= 126 else None
         if char and (char.isalnum() or char == " "):
             if len(self.player_name) < self.max_name_length:

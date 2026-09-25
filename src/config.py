@@ -27,7 +27,7 @@ class LevelConfig(BaseModel):
         field_name = info.field_name
         if field_name is None:
             return v if isinstance(v, int) else 15
-        default = cls.model_fields[field_name].default
+        default = int(cls.model_fields[field_name].default)
         if not isinstance(v, int) or v < 5 or v > 25:
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
@@ -59,7 +59,7 @@ class GameConfig(BaseModel):
     def clamp_positive_int(cls, v: object, info: ValidationInfo) -> int:
         field_name = info.field_name
         assert field_name is not None
-        default = cls.model_fields[field_name].default
+        default = int(cls.model_fields[field_name].default)
         if not isinstance(v, int) or v < 1:
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
@@ -70,7 +70,7 @@ class GameConfig(BaseModel):
     def clamp_filename_value(cls, v: object, info: ValidationInfo) -> str:
         field_name = info.field_name
         assert field_name is not None
-        default = cls.model_fields[field_name].default
+        default = str(cls.model_fields[field_name].default)
         if not isinstance(v, str):
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
