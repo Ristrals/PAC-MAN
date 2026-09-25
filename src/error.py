@@ -6,6 +6,7 @@ from enum import Enum
 
 """Custom exceptions raised by the PacMan."""
 
+
 class ParsingError(Exception):
     """Raised when the input map file has invalid syntax."""
 
@@ -32,11 +33,11 @@ class ScoreErrorType(Enum):
 
 
 class ScoreError(Exception):
-
-    def __init__(self,
-                 err_type: ScoreErrorType,
-                 score_error: Exception | None = None,
-                 entry_index: int | None = None
+    def __init__(
+        self,
+        err_type: ScoreErrorType,
+        score_error: Exception | None = None,
+        entry_index: int | None = None
     ) -> None:
         self._err_type: str = err_type.err_type
         self._is_critical: bool = err_type.is_critical
@@ -90,7 +91,6 @@ class ScoreError(Exception):
             else:
                 self._err_message += (f"{Tc.ylw}Invalid JSON schema.{Tc.clr}\n"
                                       f"{Tc.red}[!]No scores will be recorded{Tc.clr}\n")
-
 
         if self._err_type == "json_invalid":
             assert isinstance(self._score_error, ValidationError)

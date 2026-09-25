@@ -2,6 +2,7 @@
 
 from enum import Enum
 
+
 class TextColors:
     """ANSI color codes for terminal output formatting."""
     red = '\033[91m'
@@ -10,7 +11,7 @@ class TextColors:
     ylw = '\033[93m'
     cyn = '\033[36m'
     pnk = '\033[95m'
-    org ='\033[38;2;255;165;0m'
+    org = '\033[38;2;255;165;0m'
     clr = '\033[0m'
 
 
