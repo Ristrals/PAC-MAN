@@ -12,7 +12,7 @@ class MainMenuView(arcade.View):
         self.options = ["Start", "Exit"]
         self.selected = 0
         try:
-            self.score_manager = ScoreManager("highscores.json")
+            self.score_manager: ScoreManager | None = ScoreManager("highscores.json")
         except Exception as e:
             print(e)
             self.score_manager = None
@@ -115,7 +115,7 @@ class MainMenuView(arcade.View):
             anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers) -> None:
+    def on_key_press(self, key: int, modifiers: int) -> None:
         if key == arcade.key.LEFT:
             self.selected = 0
         elif key == arcade.key.RIGHT:

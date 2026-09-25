@@ -187,7 +187,7 @@ class Ghost(Token, ABC):
         start_coords: tuple[int, int] = self.current_cell.coordinates
         target_coords: tuple[int, int] = (int(self.target_coord[0]), int(self.target_coord[1]))
 
-        queue: deque = deque()
+        queue: deque[tuple[Cell, Mvt]] = deque()
         visited = {start_coords}
 
         for direction in self._DIRECTION_PRIORITY:

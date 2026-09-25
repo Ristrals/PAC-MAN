@@ -52,7 +52,7 @@ class ScoreBoard(BaseModel):
 
     @classmethod
     def validation_mitigation(cls, data: str) -> 'ScoreBoard':
-        score_board_adapter = TypeAdapter(list[dict])
+        score_board_adapter = TypeAdapter(list[dict[str, Any]])
         try:
             score_board_entries = score_board_adapter.validate_json(data)
         except ValidationError as ve:
@@ -163,19 +163,19 @@ class ScoreManager:
 
 
 if __name__ == "__main__":
-    gaspard: dict = {
+    gaspard: dict[str, Any] = {
         "name": "Gaspard",
         "score": 164
     }
-    jun: dict = {
+    jun: dict[str, Any] = {
         "name": "Jun",
         "score": 125
     }
-    kevin: dict = {
+    kevin: dict[str, Any] = {
         "name": "Kevin",
         "score": 213
     }
-    tristan: dict = {
+    tristan: dict[str, Any] = {
         "name": "Tristan",
         "score": 356
     }

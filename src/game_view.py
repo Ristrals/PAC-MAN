@@ -29,9 +29,9 @@ class GameView(arcade.View):
 
         self.animation_timer = 0.0
         self.sprite_manager = SpriteManager()
-        self.ghost_sprites: arcade.SpriteList = arcade.SpriteList()
+        self.ghost_sprites: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.ghost_sprite_map: dict[int, arcade.Sprite] = {}
-        self.pacman_sprite_list: arcade.SpriteList = arcade.SpriteList()
+        self.pacman_sprite_list: arcade.SpriteList[arcade.Sprite] = arcade.SpriteList()
         self.pacman_sprite: arcade.Sprite | None = None
 
         self.load_level()
@@ -180,6 +180,7 @@ class GameView(arcade.View):
         # 2. Update Ghost Sprites
         for ghost in self.entity_manager.ghosts:
             ghost_sprite = self.ghost_sprite_map.get(id(ghost))
+            assert ghost_sprite is not None
             ghost_sprite.alpha = 255
             if ghost_sprite:
                 ghost_textures = self.sprite_manager.get_ghost_sprites(ghost)
@@ -327,7 +328,7 @@ class GameView(arcade.View):
             anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers) -> None:
+    def on_key_press(self, key: int, modifiers: int) -> None:
         # pause menu
         if key == arcade.key.P:
             self.pause = not self.pause
@@ -380,7 +381,7 @@ class GameView(arcade.View):
             self.start = True
             self.entity_manager.pacman.buffered_direction = Movements.RIGHT
 
-    def on_update(self, delta_time) -> None:
+    def on_update(self, delta_time: float) -> None:
         if self.pause or self.cheat_mode or not self.start:
             return
         dt = min(delta_time, 1 / 30.0)

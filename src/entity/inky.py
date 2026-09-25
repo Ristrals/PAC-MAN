@@ -6,7 +6,7 @@ from src.data_lib import Movements as Mvt
 # Cyan ghost
 class Inky(ent.Ghost):
     blinky: ent.Ghost
-    _PIVOT_OFFSET: dict[Mvt, tuple] = {
+    _PIVOT_OFFSET: dict[Mvt, tuple[float, float]] = {
         Mvt.UP: (-2.0, -2.0),
         Mvt.DOWN: (2.0, 0.0),
         Mvt.LEFT: (0.0, -2.0),
