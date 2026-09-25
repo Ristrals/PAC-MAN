@@ -26,7 +26,7 @@ class LevelConfig(BaseModel):
     def clamp_positive_int(cls, v: object, info: ValidationInfo) -> int:
         field_name = info.field_name
         default = cls.model_fields[field_name].default
-        if not isinstance(v, int) or v < 5:
+        if not isinstance(v, int) or v < 5 or v > 25:
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
         return v
