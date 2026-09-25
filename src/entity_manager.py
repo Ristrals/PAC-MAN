@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from math import dist
+
 import src.entity as ent
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell

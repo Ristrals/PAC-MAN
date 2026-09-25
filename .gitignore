@@ -1,5 +1,6 @@
 .venv
 .idea
+pacman_game.spec
 *.pyc
 __pycache__
 data/highscores.json

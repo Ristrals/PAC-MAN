@@ -11,8 +11,11 @@
 #                                                                             #
 # ########################################################################### #
 
+from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError
 from pydantic import ValidationInfo, field_validator
+
+from src.path_utils import get_resource_path
 from src.error import ParsingError
 import json
 
@@ -75,7 +78,19 @@ class GameConfig(BaseModel):
 
 def load_config(file_path: str) -> GameConfig:
     if not file_path:
-        raise ParsingError("file path is empty")
+        # 1. Target writeable/editable local file path (e.g. ./data/configuration.json)
+        local_path = Path(file_path).resolve()
+
+        # 2. If it doesn't exist locally yet, seed it from the bundled default
+        if not local_path.is_file():
+            bundled_default = Path(get_resource_path(file_path))
+            if bundled_default.is_file():
+                local_path.parent.mkdir(parents=True, exist_ok=True)
+                local_path.write_text(bundled_default.read_text(encoding="utf-8"), encoding="utf-8")
+            else:
+                raise ParsingError(f"no file {file_path} detected")
+
+        # 3. Always open and parse the user-editable local file
     try:
         with open(file_path) as file:
             lines = []

@@ -6,8 +6,10 @@ import os
 from typing import Annotated, Any
 from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError, TypeAdapter
+
 from src.error import ScoreError as ScErr
 from src.error import ScoreErrorType as ScErrType
+from src.path_utils import get_resource_path
 
 
 # Score BaseModel
@@ -72,12 +74,19 @@ class ScoreBoard(BaseModel):
 # Class responsible for managing scores.
 class ScoreManager:
     def __init__(self, highscore_filename: str) -> None:
-        self._root_path: Path = Path(__file__).parent.parent
-        self._score_directory_path: Path = self._root_path / "data"
-        self._score_file_path: Path = self._score_directory_path / f"{highscore_filename}"
+        # Bundled template path (Read-only inside _MEIPASS or dev root)
+        self._bundle_data_dir: Path = Path(get_resource_path("data"))
+        self._bundle_score_file: Path = self._bundle_data_dir / highscore_filename
+
+        # Persistent user data path (Writeable local working directory)
+        self._score_directory_path: Path = Path("./data").resolve()
+        self._score_file_path: Path = self._score_directory_path / highscore_filename
+
         self._is_valid_score_board: bool = True
         self.score_board: list[Score] = []
         self.player_score: Score = Score(name="Player", score=0)
+
+        self._score_directory_path.mkdir(parents=True, exist_ok=True)
 
         # File path check
         try:
@@ -121,7 +130,9 @@ class ScoreManager:
         entries_json = json.dumps(entries)
         self.score_board = ScoreBoard.validation_mitigation(entries_json).scores
         if not self._is_valid_score_board:
-            os.rename("data/highscores.json", "data/highscores-temp.json")
+            temp_path = self._score_directory_path / "highscores-temp.json"
+            if self._score_file_path.exists():
+                os.rename(self._score_file_path, temp_path)
             self._score_file_path = self._score_directory_path / "highscores.json"
         with open(self._score_file_path, "w", encoding="utf-8") as score_file:
             json.dump([scr.model_dump() for scr in self.score_board], score_file, indent=4)
@@ -141,10 +152,15 @@ class ScoreManager:
 
     # Checks if highscore file and directory exists in project.
     def check_file_path(self) -> None:
-        if not self._score_directory_path.is_dir():
-            raise ScErr(ScErrType.DIR_NOT_FOUND, None)
         if not self._score_file_path.is_file():
-            raise ScErr(ScErrType.FILE_NOT_FOUND, None)
+            if self._bundle_score_file.is_file():
+                # Copy default bundled highscores into local writeable data dir
+                self._score_file_path.write_text(
+                    self._bundle_score_file.read_text(encoding="utf-8"),
+                    encoding="utf-8"
+                )
+            else:
+                raise ScErr(ScErrType.FILE_NOT_FOUND, None)
 
     # Score board reset option
     def reset_score_board(self) -> None:

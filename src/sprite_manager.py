@@ -3,14 +3,14 @@
 from pathlib import Path
 import arcade
 
-
 from src.data_lib import Movements as Mvt
 from src.entity import Ghost, Gs, Pacman
+from src.path_utils import get_resource_path
 
 
 class SpriteManager:
     def __init__(self) -> None:
-        self.assets_dir: Path = Path("assets/sprites")
+        self.assets_dir: Path = Path(get_resource_path("assets/sprites"))
         self.ghost_textures: dict[str, dict[Mvt | str, list[arcade.Texture]]] = {}
         self._load_ghost_textures()
         self.eyes_textures: dict[Mvt, arcade.Texture] = {}
