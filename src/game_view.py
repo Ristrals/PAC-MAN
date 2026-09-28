@@ -343,7 +343,7 @@ class GameView(arcade.View):
                     self.pause = not self.pause
                 elif self.selected == 1:
                     from src.main_menu import MainMenuView
-                    menu = MainMenuView(load_config("data/configuration.json"))
+                    menu = MainMenuView(self.config)
                     self.window.show_view(menu)
             return
 
