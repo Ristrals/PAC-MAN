@@ -17,7 +17,6 @@ clean:
 
 fclean: clean
 	rm -rf .venv
-	rm -rf dist build
 
 lint:
 	flake8 .
@@ -32,3 +31,11 @@ mp:
 
 f8:
 	flake8 .
+
+package:
+	rm -rf build
+	rm -rf dist
+	pyinstaller --windowed --clean --name pacman src/__main__.py
+	cp -r assets dist/pacman/
+	cp -r data dist/pacman/
+	cd dist && zip -r pacman.zip pacman/
