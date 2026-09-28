@@ -1,18 +1,33 @@
 import sys
+import argparse
 from src.config import load_config
 from src.main_menu import MainMenuView
 import arcade
 
 
+def parse_config_path() -> str:
+    parser = argparse.ArgumentParser(description="PAC-MAN Game")
+    # nargs='?' makes the positional argument optional.
+    # If no argument is passed (e.g. on double-click), it defaults to "data/configuration.json".
+    parser.add_argument(
+        "config_path",
+        nargs="?",
+        default="data/configuration.json",
+        help="Path to configuration file (default: data/configuration.json)"
+    )
+    args = parser.parse_args()
+    return args.config_path
+
+
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: python3 pac-man.py config.json")
-        sys.exit(1)
+    config_file = parse_config_path()
+
     try:
-        config = load_config(sys.argv[1])
+        config = load_config(config_file)
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
+
     screen_width, screen_height = arcade.get_display_size()
     window = arcade.Window(
         int(screen_width * 0.85),

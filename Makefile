@@ -11,7 +11,7 @@ debug:
 install:
 	uv sync
 
-dmake:
+dist:
 	python -m PyInstaller pacman_game.spec --clean
 
 clean:
@@ -20,9 +20,11 @@ clean:
 
 dclean:
 	rm -rf dist
+	rm -rf build
 
 fclean: clean
 	rm -rf .venv
+	rm -rf build
 	rm -rf dist
 
 lint:

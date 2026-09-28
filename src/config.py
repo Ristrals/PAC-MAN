@@ -11,6 +11,7 @@
 #                                                                             #
 # ########################################################################### #
 
+import sys
 from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError
 from pydantic import ValidationInfo, field_validator
@@ -76,20 +77,30 @@ class GameConfig(BaseModel):
         return v
 
 
-def load_config(file_path: str) -> GameConfig:
-    if not file_path:
-        file_path = "data/configuration.json"
+def load_config(file_path: str = "data/configuration.json") -> GameConfig:
+    input_path = Path(file_path)
 
-        # 1. Resolve path through PyInstaller bundle helper (sys._MEIPASS / exe dir)
-    target_path = get_resource_path(file_path)
+    if input_path.is_absolute():
+        target_path = input_path
+    else:
+        # Check local folder next to executable first (dist/pacman_game/data/...)
+        if getattr(sys, "frozen", False):
+            local_path = Path(sys.executable).parent / file_path
+        else:
+            local_path = Path(file_path).resolve()
 
-    # 2. Strict check: raise ParsingError if no file is found
-    if not target_path.is_file():
+        if local_path.is_file():
+            target_path = local_path
+        else:
+            # Fallback to _internal/ bundled template
+            target_path = get_resource_path(file_path)
+
+    if not target_path or not target_path.is_file():
         raise ParsingError(f"no file {file_path} detected")
 
         # 3. Always open and parse the user-editable local file
     try:
-        with open(file_path) as file:
+        with open(target_path, encoding="utf-8") as file:
             lines = []
             comment_block = False
             for line in file:

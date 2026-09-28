@@ -3,6 +3,7 @@
 import json
 import re
 import os
+import sys
 from typing import Annotated, Any
 from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError, TypeAdapter
@@ -79,7 +80,12 @@ class ScoreManager:
         self._bundle_score_file: Path = self._bundle_data_dir / highscore_filename
 
         # Persistent user data path (Writeable local working directory)
-        self._score_directory_path: Path = Path("./data").resolve()
+        self._score_directory_path: Path = Path()
+        if getattr(sys, "frozen", False):
+            self._score_directory_path = Path(sys.executable).parent / "data"
+        else:
+            self._score_directory_path = Path("./data").resolve()
+
         self._score_file_path: Path = self._score_directory_path / highscore_filename
 
         self._is_valid_score_board: bool = True
