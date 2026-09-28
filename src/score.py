@@ -3,6 +3,7 @@
 import json
 import re
 import os
+import sys
 from typing import Annotated, Any
 from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError, TypeAdapter
@@ -72,7 +73,10 @@ class ScoreBoard(BaseModel):
 # Class responsible for managing scores.
 class ScoreManager:
     def __init__(self, highscore_filename: str) -> None:
-        self._root_path: Path = Path(__file__).parent.parent
+        if getattr(sys, "frozen", False):
+            self._root_path: Path = Path(sys.executable).parent
+        else:
+            self._root_path: Path = Path(__file__).parent.parent
         self._score_directory_path: Path = self._root_path / "data"
         self._score_file_path: Path = self._score_directory_path / f"{highscore_filename}"
         self._is_valid_score_board: bool = True
