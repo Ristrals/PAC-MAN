@@ -2,6 +2,8 @@
 
 import json
 import re
+import os
+import sys
 from typing import Annotated, Any
 from pathlib import Path
 from pydantic import BaseModel, Field, ValidationError, TypeAdapter
@@ -15,13 +17,13 @@ class Score(BaseModel):
     score: Annotated[int, Field(ge=0, le=99999, alias="score")]
 
     @classmethod
-    def validation_mitigation(cls, entry_index: int | None = None, **data) -> 'Score':
+    def validation_mitigation(cls, entry_index: int | None = None, **data: Any) -> 'Score':
         try:
             return cls(**data)
         except ValidationError as ve:
             for err in ve.errors():
                 val_error_type = err['type']
-                val_error_loc =  err['loc']
+                val_error_loc = err['loc']
                 if val_error_type == "json_invalid":
                     raise ScErr(ScErrType.JSON_CORRUPT, ve, entry_index=entry_index)
                 if val_error_type == "missing":
@@ -51,7 +53,7 @@ class ScoreBoard(BaseModel):
 
     @classmethod
     def validation_mitigation(cls, data: str) -> 'ScoreBoard':
-        score_board_adapter = TypeAdapter(list[dict])
+        score_board_adapter = TypeAdapter(list[dict[str, Any]])
         try:
             score_board_entries = score_board_adapter.validate_json(data)
         except ValidationError as ve:
@@ -71,7 +73,10 @@ class ScoreBoard(BaseModel):
 # Class responsible for managing scores.
 class ScoreManager:
     def __init__(self, highscore_filename: str) -> None:
-        self._root_path: Path = Path(__file__).parent.parent
+        if getattr(sys, "frozen", False):
+            self._root_path: Path = Path(sys.executable).parent
+        else:
+            self._root_path = Path(__file__).parent.parent
         self._score_directory_path: Path = self._root_path / "data"
         self._score_file_path: Path = self._score_directory_path / f"{highscore_filename}"
         self._is_valid_score_board: bool = True
@@ -120,7 +125,10 @@ class ScoreManager:
         entries_json = json.dumps(entries)
         self.score_board = ScoreBoard.validation_mitigation(entries_json).scores
         if not self._is_valid_score_board:
-            self._score_file_path = self._score_directory_path / "highscores_temp.json"
+            target_file = "data/highscores.json"
+            if os.path.exists(target_file):
+                os.rename(target_file, "data/highscores-temp.json")
+            self._score_file_path = self._score_directory_path / "highscores.json"
         with open(self._score_file_path, "w", encoding="utf-8") as score_file:
             json.dump([scr.model_dump() for scr in self.score_board], score_file, indent=4)
 
@@ -161,19 +169,19 @@ class ScoreManager:
 
 
 if __name__ == "__main__":
-    gaspard: dict = {
-        "name" : "Gaspard",
-        "score" : 164
+    gaspard: dict[str, Any] = {
+        "name": "Gaspard",
+        "score": 164
     }
-    jun: dict = {
+    jun: dict[str, Any] = {
         "name": "Jun",
         "score": 125
     }
-    kevin: dict = {
+    kevin: dict[str, Any] = {
         "name": "Kevin",
         "score": 213
     }
-    tristan: dict = {
+    tristan: dict[str, Any] = {
         "name": "Tristan",
         "score": 356
     }
@@ -184,7 +192,7 @@ if __name__ == "__main__":
     tristan_score = 356
 
     try:
-        score_manager = ScoreManager("highscores.json")
+        score_manager = ScoreManager("data/highscores.json")
         print(score_manager)
         print(
             score_manager.compare_player_score(gaspar_score),

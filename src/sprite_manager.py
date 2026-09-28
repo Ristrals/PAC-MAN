@@ -1,9 +1,9 @@
 # PACMAN - 42Luxembourg 2026 - kmalfois
 
 from pathlib import Path
-from unittest import async_case
-
 import arcade
+
+
 from src.data_lib import Movements as Mvt
 from src.entity import Ghost, Gs, Pacman
 

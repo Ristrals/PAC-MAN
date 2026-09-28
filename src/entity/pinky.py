@@ -6,7 +6,7 @@ from src.data_lib import Movements as Mvt
 
 # Pink ghost
 class Pinky(ent.Ghost):
-    _TRACKING_OFFSET: dict[Mvt, tuple] = {
+    _TRACKING_OFFSET: dict[Mvt, tuple[float, float]] = {
         Mvt.UP: (-4.0, -4.0),
         Mvt.DOWN: (4.0, 0.0),
         Mvt.LEFT: (0.0, -4.0),

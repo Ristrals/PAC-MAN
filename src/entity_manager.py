@@ -5,7 +5,6 @@ from math import dist
 import src.entity as ent
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType as St, Cell
-from src.data_lib import Movements as Mvt
 
 
 @dataclass
@@ -36,10 +35,10 @@ class EntityManager:
 
         # All token move
         self.pacman.move(delta_time, self.grid)
-        print(self.pacman)
+        # print(self.pacman)
         if not self.ghost_freeze:
             for ghost in self.ghosts:
-                print(ghost)
+                # print(ghost)
                 ghost.update_buffered_direction(delta_time)
                 ghost.move(delta_time, self.grid)
 
@@ -87,7 +86,6 @@ class EntityManager:
             ghost.current_cell = self.grid.get_cell(int(gy), int(gx))
             ghost.initiate_movement()
 
-
     # Update Ghost behaviors regarding Delta Time
     def _update_ghost_states(self, delta_time: float) -> None:
         for ghost in self.ghosts:
@@ -132,13 +130,14 @@ class EntityManager:
                             ghost.initiate_movement()
                 ghost.speed = ghost_state.get_speed_ratio() * self.base_speed
 
+    # Initializes all tokens
     def _initialize_tokens(self) -> None:
         pacman_pos: Cell = self.grid.get_center_position()
         ghosts_pos: list[Cell] = [
-            self.grid.get_cell(0, 0),
-            self.grid.get_cell(0, self.grid.width),
-            self.grid.get_cell(self.grid.height, self.grid.width),
-            self.grid.get_cell(self.grid.height, 0)
+            self.grid.get_cell(0, 1),  # Blinky
+            self.grid.get_cell(1, self.grid.width),  # Pinky
+            self.grid.get_cell(self.grid.height, self.grid.width - 2),  # Inky
+            self.grid.get_cell((self.grid.height - 2), 0)  # Clyde
         ]
 
         # Placing Pacman

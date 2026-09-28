@@ -6,7 +6,7 @@ from src.score import ScoreManager
 
 
 class EndView(arcade.View):
-    def __init__(self, score: int, config: GameConfig, is_victory: bool):
+    def __init__(self, score: int, config: GameConfig, is_victory: bool) -> None:
         super().__init__()
         self.score = score
         self.config = config
@@ -14,17 +14,17 @@ class EndView(arcade.View):
         self.player_name = ""
         self.max_name_length = 10
         try:
-            self.score_manager = ScoreManager(config.highscore_filename)
+            self.score_manager: ScoreManager | None = ScoreManager(config.highscore_filename)
         except Exception as e:
             print(e)
             self.score_manager = None
 
-    def on_draw(self):
+    def on_draw(self) -> None:
         self.clear()
         self.draw_info()
         self.draw_input()
 
-    def draw_info(self):
+    def draw_info(self) -> None:
         if self.is_victory:
             title = "YOU WIN!!"
             msg = "Congrats! The ghosts filed a complaint. Name please:"
@@ -61,7 +61,7 @@ class EndView(arcade.View):
             bold=True
         )
 
-    def draw_input(self):
+    def draw_input(self) -> None:
         arcade.draw_lbwh_rectangle_filled(
             (self.window.width - 300) / 2,
             self.window.height * 0.20,
@@ -87,7 +87,7 @@ class EndView(arcade.View):
             anchor_x="center"
         )
 
-    def on_key_press(self, key, modifiers):
+    def on_key_press(self, key: int, modifiers: int) -> None:
         char = chr(key) if 32 <= key <= 126 else None
         if char and (char.isalnum() or char == " "):
             if len(self.player_name) < self.max_name_length:

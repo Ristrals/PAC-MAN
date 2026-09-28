@@ -36,7 +36,8 @@ class Cell:
             case Mvt.RIGHT: return self.east
             case _: return False
 
-def create_cell(x, y, value) -> Cell:
+
+def create_cell(x: int, y: int, value: int) -> Cell:
     return Cell(
         x=x,
         y=y,

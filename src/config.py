@@ -25,7 +25,9 @@ class LevelConfig(BaseModel):
     @classmethod
     def clamp_positive_int(cls, v: object, info: ValidationInfo) -> int:
         field_name = info.field_name
-        default = cls.model_fields[field_name].default
+        if field_name is None:
+            return v if isinstance(v, int) else 15
+        default = int(cls.model_fields[field_name].default)
         if not isinstance(v, int) or v < 5 or v > 25:
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
@@ -39,7 +41,7 @@ class GameConfig(BaseModel):
     points_per_super_pacgum: int = Field(default=50, ge=1)
     points_per_ghost: int = Field(default=200, ge=1)
     seed: int = Field(default=42, ge=1)
-    level_max_time: int = Field(default=90, ge=1)
+    level_max_time: float = Field(default=90, ge=1)
     highscore_filename: str = "highscores.json"
     levels: list[LevelConfig] = Field(default_factory=list)
 
@@ -56,7 +58,8 @@ class GameConfig(BaseModel):
     @classmethod
     def clamp_positive_int(cls, v: object, info: ValidationInfo) -> int:
         field_name = info.field_name
-        default = cls.model_fields[field_name].default
+        assert field_name is not None
+        default = int(cls.model_fields[field_name].default)
         if not isinstance(v, int) or v < 1:
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
@@ -66,7 +69,8 @@ class GameConfig(BaseModel):
     @classmethod
     def clamp_filename_value(cls, v: object, info: ValidationInfo) -> str:
         field_name = info.field_name
-        default = cls.model_fields[field_name].default
+        assert field_name is not None
+        default = str(cls.model_fields[field_name].default)
         if not isinstance(v, str):
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
@@ -109,6 +113,20 @@ def load_config(file_path: str) -> GameConfig:
         txt = "\n".join(lines)
         try:
             data = json.loads(txt)
+            expected_keys = [
+                "lives",
+                "seed",
+                "pacgum",
+                "points_per_pacgum",
+                "points_per_super_pacgum",
+                "points_per_ghost",
+                "level_max_time",
+                "highscore_filename",
+                "levels"
+            ]
+            for key in expected_keys:
+                if key not in data:
+                    print(f"Warning: {key} missing, using default.")
         except json.JSONDecodeError:
             raise ParsingError("json format error detected")
         try:
