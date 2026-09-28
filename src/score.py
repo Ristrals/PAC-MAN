@@ -76,7 +76,7 @@ class ScoreManager:
         if getattr(sys, "frozen", False):
             self._root_path: Path = Path(sys.executable).parent
         else:
-            self._root_path: Path = Path(__file__).parent.parent
+            self._root_path = Path(__file__).parent.parent
         self._score_directory_path: Path = self._root_path / "data"
         self._score_file_path: Path = self._score_directory_path / f"{highscore_filename}"
         self._is_valid_score_board: bool = True
