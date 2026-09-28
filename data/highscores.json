@@ -1,5 +1,13 @@
 [
     {
+        "name": "Paparazzi",
+        "score": 450
+    },
+    {
+        "name": "kevin",
+        "score": 180
+    },
+    {
         "name": "test",
         "score": 100
     },
@@ -8,16 +16,8 @@
         "score": 90
     },
     {
-        "name": "Player",
-        "score": 0
-    },
-    {
-        "name": "Player",
-        "score": 0
-    },
-    {
-        "name": "Player",
-        "score": 0
+        "name": "TEST",
+        "score": 70
     },
     {
         "name": "Player",
