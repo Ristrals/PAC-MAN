@@ -5,11 +5,15 @@ import arcade
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) > 1:
+        config_path = sys.argv[1]
+    elif getattr(sys, "frozen", False):
+        config_path = "data/configuration.json"
+    else:
         print("Usage: python3 pac-man.py config.json")
         sys.exit(1)
     try:
-        config = load_config(sys.argv[1])
+        config = load_config(config_path)
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)

@@ -17,6 +17,7 @@ clean:
 
 fclean: clean
 	rm -rf .venv
+	rm -rf dist build
 
 lint:
 	flake8 .

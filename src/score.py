@@ -186,7 +186,7 @@ if __name__ == "__main__":
     tristan_score = 356
 
     try:
-        score_manager = ScoreManager("highscores.json")
+        score_manager = ScoreManager("data/highscores.json")
         print(score_manager)
         print(
             score_manager.compare_player_score(gaspar_score),

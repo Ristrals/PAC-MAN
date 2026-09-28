@@ -1,5 +1,5 @@
 {
-    "lives": 0,
+    "lives": 3,
     "seed": 42,
     "pacgum": 42,
     "points_per_pacgum": 10,
@@ -8,14 +8,14 @@
     "level_max_time": 90,
     "highscore_filename": "highscores.json",
     "levels": [
-        {"width": -5, "height": 0},
         {"width": 15, "height": 15},
-        {"width": 15, "height": 15},
-        {"width": 15, "height": 15},
-        {"width": 15, "height": 15},
-        {"width": 16, "height": 20},
-        {"width": 17, "height": 20},
-        {"width": 18, "height": 20},
+        {"width": 15, "height": 16},
+        {"width": 16, "height": 17},
+        {"width": 17, "height": 17},
+        {"width": 17, "height": 18},
+        {"width": 18, "height": 18},
+        {"width": 18, "height": 19},
+        {"width": 19, "height": 19},
         {"width": 19, "height": 20},
         {"width": 20, "height": 20}
     ]
