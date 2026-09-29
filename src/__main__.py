@@ -1,10 +1,33 @@
+"""Entry point of the Pac-Man game.
+
+Usage:
+    python3 pac-man.py <config.json>
+
+When run as a frozen executable (PyInstaller), the configuration
+defaults to ``data/configuration.json``.
+"""
+
 import sys
 from src.config import load_config
 from src.main_menu import MainMenuView
 import arcade
 
 
-if __name__ == '__main__':
+def main() -> None:
+    """Load the configuration and launch the game window.
+
+    The configuration path is read from the first command-line
+    argument. Without it, the program falls back to
+    ``data/configuration.json`` when frozen, or prints the usage and
+    exits otherwise.
+
+    The window takes 85% of the screen size and opens on the main
+    menu.
+
+    Raises:
+        SystemExit: If no configuration path is given (outside a
+            frozen executable), or if the configuration fails to load.
+    """
     if len(sys.argv) > 1:
         config_path = sys.argv[1]
     elif getattr(sys, "frozen", False):
@@ -26,3 +49,7 @@ if __name__ == '__main__':
     menu = MainMenuView(config)
     window.show_view(menu)
     arcade.run()
+
+
+if __name__ == "__main__":
+    main()

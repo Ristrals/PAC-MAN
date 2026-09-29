@@ -1,3 +1,5 @@
+"""Main menu shown when the game starts."""
+
 from src.score import ScoreManager
 from src.config import GameConfig
 from src.game_view import GameView
@@ -7,18 +9,43 @@ import arcade
 
 
 class MainMenuView(arcade.View):
+    """Main menu displaying the highscores and the Start/Exit options.
+
+    Attributes:
+        options: Labels of the menu options.
+        selected: Index of the selected option in ``options``.
+        score_manager: Manager of the highscore file, or ``None`` if
+            it could not be created.
+        config: Game configuration, passed to the game view.
+    """
+
     def __init__(self, config: GameConfig) -> None:
+        """Initialize the main menu.
+
+        If the score manager cannot be created, the error is printed
+        and no highscores are displayed.
+
+        Args:
+            config: Game configuration.
+        """
         super().__init__()
         self.options = ["Start", "Exit"]
         self.selected = 0
+        self.config = config
         try:
-            self.score_manager: ScoreManager | None = ScoreManager("highscores.json")
+            self.score_manager: ScoreManager | None = ScoreManager(config.highscore_filename)
         except Exception as e:
             print(e)
             self.score_manager = None
-        self.config = config
 
     def on_draw(self) -> None:
+        """Draw the main menu.
+
+        Draws the title, the top 10 highscores in two columns of five
+        (empty slots are shown as ``---``), the Start/Exit options with
+        the selected one highlighted, and a bottom bar with the
+        controls.
+        """
         self.clear()
         arcade.draw_text(
             "PAC-MAN",
@@ -116,6 +143,17 @@ class MainMenuView(arcade.View):
         )
 
     def on_key_press(self, key: int, modifiers: int) -> None:
+        """Handle the menu navigation.
+
+        Left selects Start and Right selects Exit. Enter confirms the
+        selected option: Start opens the game view (if creating it
+        fails, the error is printed and the menu stays open), Exit
+        closes the window. Escape always closes the window.
+
+        Args:
+            key: Code of the pressed key.
+            modifiers: Bit mask of the active modifier keys (unused).
+        """
         if key == arcade.key.LEFT:
             self.selected = 0
         elif key == arcade.key.RIGHT:

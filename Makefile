@@ -3,10 +3,10 @@
 PC = python3
 
 run:
-	uv run $(PC) -m src data/configuration.json
+	uv run $(PC) pac-man.py data/configuration.json
 
 debug:
-	uv run $(PC) -m pdb -m src data/configuration.json
+	uv run $(PC) -m pdb pac-man.py data/configuration.json
 
 install:
 	uv sync
