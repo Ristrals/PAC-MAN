@@ -387,7 +387,7 @@ class GameView(arcade.View):
         dt = min(delta_time, 1 / 30.0)
         self.animation_timer += dt
         if self.start:
-            self.time_left -= dt
+            self.time_left -= int(dt)
         summary = self.entity_manager.update(dt)
         if summary.eat_pacgum:
             self.score += self.config.points_per_pacgum
