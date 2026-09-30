@@ -48,7 +48,10 @@ def main() -> None:
     )
     menu = MainMenuView(config)
     window.show_view(menu)
-    arcade.run()
+    try:
+        arcade.run()
+    except KeyboardInterrupt:
+        print("Game stopped.")
 
 
 if __name__ == "__main__":

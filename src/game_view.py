@@ -310,6 +310,15 @@ class GameView(arcade.View):
                 anchor_x="center",
                 bold=True
             )
+        arcade.draw_text(
+                "Press 'C' to continue",
+                self.window.width / 2,
+                self.window.height / 2 + 50 - 320,
+                arcade.color.ORANGE,
+                18,
+                anchor_x="center",
+                bold=True
+        )
 
     def draw_hud(self) -> None:
         """Draw the lives, level, score and timer at the top."""
