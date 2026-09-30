@@ -15,19 +15,45 @@ import src.entity as ent
 
 
 class GhostState(Enum):
+    """Represent the movement states available to a ghost."""
+
     CHASE = ("Chase", 0.75, 20.0)
     SCATTER = ("Scatter", 0.75, 5.0)
     FRIGHTENED = ("Frightened", 0.5, 7.0)
     EATEN = ("Eaten", 1.80, 5.0)
 
     def get_state(self) -> str:
+        """Return the display name of the ghost state.
+
+        Returns:
+            The human-readable state name.
+        """
         return self.value[0]
 
     def get_speed_ratio(self) -> float:
+        """Return the movement speed multiplier for the state.
+
+        Returns:
+            The speed ratio associated with the state.
+        """
         return self.value[1]
 
 
 class Ghost(Token, ABC):
+    """Base class for ghosts and their state-dependent movement behavior.
+
+    Attributes:
+        state: Current state of the ghost.
+        target_coord: Coordinates the ghost is currently targeting.
+        scatter_coord: Coordinates used as the ghost's scatter target.
+        grid: Grid on which the ghost moves.
+        pacman: Pac-Man instance targeted by the ghost.
+        behaviors: Mapping of states to their behavior methods.
+        was_centered: Whether the ghost was centered during the previous update.
+        spawn_snapped: Whether an eaten ghost has reached its spawn position.
+        respawn_timer: Remaining timer after the ghost reaches its spawn position.
+    """
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
     state: GhostState | None = None
     target_coord: tuple[float, float] = (0.0, 0.0)
@@ -42,6 +68,11 @@ class Ghost(Token, ABC):
 
     @model_validator(mode="after")
     def init_sequence(self) -> 'Ghost':
+        """Initialize state behaviors and begin ghost movement.
+
+        Returns:
+            The initialized ghost.
+        """
         self.behaviors = {
             GhostState.CHASE: self._chase_behavior,
             GhostState.SCATTER: self._scatter_behavior,
@@ -52,6 +83,12 @@ class Ghost(Token, ABC):
         return self
 
     def __str__(self) -> str:
+        """Return a formatted description of the ghost's current state.
+
+        Returns:
+            A string containing the ghost's name, position, target, direction,
+            status, and spawn information.
+        """
         ghost_name = ""
         y, x = self.coordinates
         ty, tx = self.target_coord
@@ -78,6 +115,12 @@ class Ghost(Token, ABC):
         return to_print
 
     def move(self, delta_time: float, grid: Grid) -> None:
+        """Advance the ghost through the grid for one update.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+            grid: Grid used to update the ghost's current cell.
+        """
         if not self.active:
             return
 
@@ -116,6 +159,11 @@ class Ghost(Token, ABC):
         self.was_centered = currently_centered
 
     def update_buffered_direction(self, delta_time: float) -> None:
+        """Choose the next direction based on the ghost's current state.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+        """
         self._get_target()
         if self.state == GhostState.EATEN:
             self._get_bfs_direction(delta_time)
@@ -124,6 +172,7 @@ class Ghost(Token, ABC):
 
     # Tracks target via target proximity
     def _get_proximity_direction(self) -> None:
+        """Buffer the valid direction closest to the current target."""
         if not self.direction:
             return
 
@@ -170,6 +219,11 @@ class Ghost(Token, ABC):
 
     # Directly traces the shortest path to the target
     def _get_bfs_direction(self, delta_time: float) -> None:
+        """Buffer the first direction on a shortest path to the target.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+        """
         if self.spawn_snapped:
             self.direction = None
             self.buffered_direction = None
@@ -220,6 +274,15 @@ class Ghost(Token, ABC):
 
     # Recovers next cell on trajectory
     def _get_next_cell(self, current_cell: Cell, direction: Mvt) -> Cell | None:
+        """Return the neighboring cell in a direction when it is in bounds.
+
+        Args:
+            current_cell: Cell from which to move.
+            direction: Direction of the neighboring cell.
+
+        Returns:
+            The neighboring cell, or ``None`` when the position is out of bounds.
+        """
         curr_y, curr_x = current_cell.y, current_cell.x
         off_y, off_x = direction.cell_offset
         ny, nx = curr_y + off_y, curr_x + off_x
@@ -229,11 +292,20 @@ class Ghost(Token, ABC):
 
     # Recovers target tile relative to current state
     def _get_target(self) -> None:
+        """Update the target coordinates using the current ghost behavior."""
         if self.state and self.state in self.behaviors:
             self.behaviors[self.state]()
 
     # Checks if ghost are back on their spawn tile while eaten
     def _check_eaten_arrival(self, delta_time: float) -> bool:
+        """Check whether an eaten ghost has reached its initial position.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+
+        Returns:
+            Whether the ghost arrived at its spawn position during the update.
+        """
         assert isinstance(self.init_coord, tuple)
         target_y, target_x = self.init_coord
         dist_y = abs(self.y - target_y)
@@ -253,32 +325,51 @@ class Ghost(Token, ABC):
         return False
 
     def _get_relative_distance(self, target: tuple[float, float]) -> float:
+        """Return the Euclidean distance from the ghost to a target.
+
+        Args:
+            target: Coordinates of the target position.
+
+        Returns:
+            The distance between the ghost and the target.
+        """
         return dist(self.coordinates, target)
 
     # [Behaviors]
     @abstractmethod
     def _chase_behavior(self) -> None:
-        """Specific ghost behaviors to recover their targeted cell"""
+        """Set the target coordinates for the concrete ghost's chase mode."""
         pass
 
     def _scatter_behavior(self) -> None:
+        """Set the scatter position as the ghost's current target."""
         self.target_coord = self.scatter_coord
 
     def _frightened_behavior(self) -> None:
-        """Target coordinate unused; movement selected pseudo-randomly."""
+        """Leave targeting unused because frightened movement is random."""
         pass
 
     def _eaten_behavior(self) -> None:
+        """Set the initial position as the target while the ghost is eaten."""
         if self.init_coord:
             self.target_coord = self.init_coord
 
     # [Tools]
     @staticmethod
     def to_grid_position(coordinates: tuple[float, float]) -> tuple[int, int]:
+        """Convert floating-point coordinates to an integer grid position.
+
+        Args:
+            coordinates: Coordinates in ``(y, x)`` order.
+
+        Returns:
+            The integer position in ``(x, y)`` order.
+        """
         y, x = coordinates
         return int(x), int(y)
 
     def initiate_movement(self) -> None:
+        """Set the first available direction according to priority order."""
         for direction in self._DIRECTION_PRIORITY:
             if self.can_move(direction):
                 self.direction = direction

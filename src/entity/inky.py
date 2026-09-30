@@ -5,6 +5,13 @@ from src.data_lib import Movements as Mvt
 
 # Cyan ghost
 class Inky(ent.Ghost):
+    """Represent Inky, the cyan ghost that uses Blinky to calculate targets.
+
+    Attributes:
+        blinky: Blinky instance used to calculate Inky's target.
+        _PIVOT_OFFSET: Direction-based offsets used to calculate the pivot.
+    """
+
     blinky: ent.Ghost
     _PIVOT_OFFSET: dict[Mvt, tuple[float, float]] = {
         Mvt.UP: (-2.0, -2.0),
@@ -14,6 +21,7 @@ class Inky(ent.Ghost):
     }
 
     def _chase_behavior(self) -> None:
+        """Target a point reflected across Blinky from ahead of Pac-Man."""
         if not self.pacman.direction or not self.blinky:
             self.target_coord = self.pacman.coordinates
             return

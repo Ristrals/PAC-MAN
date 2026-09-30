@@ -6,6 +6,12 @@ from src.data_lib import Movements as Mvt
 
 # Pink ghost
 class Pinky(ent.Ghost):
+    """Represent Pinky, the pink ghost that targets ahead of Pac-Man.
+
+    Attributes:
+        _TRACKING_OFFSET: Direction-based offsets used to calculate the target.
+    """
+
     _TRACKING_OFFSET: dict[Mvt, tuple[float, float]] = {
         Mvt.UP: (-4.0, -4.0),
         Mvt.DOWN: (4.0, 0.0),
@@ -14,6 +20,7 @@ class Pinky(ent.Ghost):
     }
 
     def _chase_behavior(self) -> None:
+        """Target the position four tiles ahead of Pac-Man's direction."""
         if not self.pacman.direction:
             self.target_coord = self.pacman.coordinates
             return

@@ -13,11 +13,27 @@ from src.error import ScoreErrorType as ScErrType
 
 # Score BaseModel
 class Score(BaseModel):
+    """Represent a validated player score.
+
+    Attributes:
+        name: Player name, limited to ten allowed characters.
+        score: Numeric score between zero and 99999.
+    """
+
     name: Annotated[str, Field(max_length=10, pattern=r"^[a-zA-Z0-9 ]+$", alias="name")]
     score: Annotated[int, Field(ge=0, le=99999, alias="score")]
 
     @classmethod
     def validation_mitigation(cls, entry_index: int | None = None, **data: Any) -> 'Score':
+        """Validate score data and mitigate recoverable validation errors.
+
+        Args:
+            entry_index: Index of the invalid entry in a score board, if known.
+            **data: Candidate score fields to validate.
+
+        Returns:
+            A validated score, using corrected fallback values when possible.
+        """
         try:
             return cls(**data)
         except ValidationError as ve:
@@ -49,10 +65,24 @@ class Score(BaseModel):
 
 # Score Board BaseModel
 class ScoreBoard(BaseModel):
+    """Represent a collection of validated scores.
+
+    Attributes:
+        score_board: List of scores contained in the score board.
+    """
+
     score_board: list[Score] = Field(default_factory=list)
 
     @classmethod
     def validation_mitigation(cls, data: str) -> 'ScoreBoard':
+        """Parse and validate score-board JSON data.
+
+        Args:
+            data: JSON string containing score entries.
+
+        Returns:
+            A score board containing validated and mitigated scores.
+        """
         score_board_adapter = TypeAdapter(list[dict[str, Any]])
         try:
             score_board_entries = score_board_adapter.validate_json(data)
@@ -67,12 +97,25 @@ class ScoreBoard(BaseModel):
 
     @property
     def scores(self) -> list[Score]:
+        """Return the scores contained in the score board."""
         return self.score_board
 
 
 # Class responsible for managing scores.
 class ScoreManager:
+    """Manage score-board files and the player's current score.
+
+    Attributes:
+        score_board: Scores currently loaded into memory.
+        player_score: Current player's registered score.
+    """
+
     def __init__(self, highscore_filename: str) -> None:
+        """Initialize the manager and load the configured score file.
+
+        Args:
+            highscore_filename: Name of the highscore file in the data directory.
+        """
         if getattr(sys, "frozen", False):
             self._root_path: Path = Path(sys.executable).parent
         else:
@@ -107,6 +150,11 @@ class ScoreManager:
 
     # String function.
     def __str__(self) -> str:
+        """Return the score board formatted for display.
+
+        Returns:
+            A formatted list of ranked player scores.
+        """
         score_str = "\n--= SCORE BOARD =--\n"
         for index, score in enumerate(self.score_board, start=1):
             score_str += f"{index} | {score.name}: {score.score}\n"
@@ -114,6 +162,7 @@ class ScoreManager:
 
     # Loads score's JSON file into the game.
     def load_scores(self) -> None:
+        """Load, validate, and sort scores from the configured JSON file."""
         with open(self._score_file_path, "r", encoding="utf-8") as scores_list:
             scores_string = scores_list.read()
         self.score_board = ScoreBoard.validation_mitigation(scores_string).scores
@@ -121,6 +170,7 @@ class ScoreManager:
 
     # Export scores into a JSON file, idealy before the game closes.
     def export_scores(self) -> None:
+        """Validate and write the current score board to its JSON file."""
         entries = [score.model_dump() for score in self.score_board]
         entries_json = json.dumps(entries)
         self.score_board = ScoreBoard.validation_mitigation(entries_json).scores
@@ -134,6 +184,11 @@ class ScoreManager:
 
     # Verify then register an individual score into the score board.
     def register_score(self, player_score: dict[str, Any] | Score) -> None:
+        """Validate and add a player's score to the sorted score board.
+
+        Args:
+            player_score: Score model or mapping containing player score data.
+        """
         if isinstance(player_score, Score):
             self.player_score = Score.validation_mitigation(**player_score.model_dump())
         else:
@@ -147,6 +202,7 @@ class ScoreManager:
 
     # Checks if highscore file and directory exists in project.
     def check_file_path(self) -> None:
+        """Verify that the score directory and file both exist."""
         if not self._score_directory_path.is_dir():
             raise ScErr(ScErrType.DIR_NOT_FOUND, None)
         if not self._score_file_path.is_file():
@@ -154,10 +210,19 @@ class ScoreManager:
 
     # Score board reset option
     def reset_score_board(self) -> None:
+        """Reset the score board to ten empty player entries."""
         self.score_board = [Score(name="Player", score=0) for i in range(10)]
 
     # [Tool]: Checks if current score must be recorded.
     def compare_player_score(self, player_score: int) -> bool:
+        """Check whether a score qualifies for the top ten.
+
+        Args:
+            player_score: Score to compare with the current top ten.
+
+        Returns:
+            Whether the score should be recorded in the score board.
+        """
         top_10 = self.get_top_10()
         if len(top_10) < 10:
             return True
@@ -165,6 +230,11 @@ class ScoreManager:
 
     # [Tool]: Returns Top10
     def get_top_10(self) -> list[Score]:
+        """Return the ten highest scores currently in the score board.
+
+        Returns:
+            Up to ten scores in descending score order.
+        """
         return self.score_board[:10]
 
 

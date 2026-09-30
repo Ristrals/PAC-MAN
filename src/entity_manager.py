@@ -9,6 +9,15 @@ from src.grid.cell import StateType as St, Cell
 
 @dataclass
 class FrameSummary:
+    """Summarize events detected during one game update.
+
+    Attributes:
+        eat_pacgum: Whether Pac-Man consumed a regular pacgum.
+        eat_superpacgum: Whether Pac-Man consumed a super pacgum.
+        defeated: Whether Pac-Man was defeated during the update.
+        eaten_ghosts: Ghosts defeated by Pac-Man during the update.
+    """
+
     eat_pacgum: bool = False
     eat_superpacgum: bool = False
     defeated: bool = False
@@ -16,7 +25,27 @@ class FrameSummary:
 
 
 class EntityManager:
+    """Coordinate Pac-Man, ghosts, movement, collisions, and game states.
+
+    Attributes:
+        grid: Grid containing the game map.
+        base_speed: Base movement speed used by entities.
+        _timer: Remaining time in the current chase or scatter phase.
+        frighten_timer: Remaining time in the frightened phase.
+        current_behavior: Current behavior state applied to ghosts.
+        _base_behavior: Chase or scatter state to restore after frightened mode.
+        ghost_freeze: Whether ghost movement is temporarily disabled.
+        pacman: Pac-Man entity managed by this instance.
+        ghosts: Ghost entities managed by this instance.
+    """
+
     def __init__(self, grid: Grid, base_speed: float = 3.0) -> None:
+        """Initialize the entity manager and create all game entities.
+
+        Args:
+            grid: Grid containing the game map.
+            base_speed: Default movement speed for entities.
+        """
         self.grid: Grid = grid
         self.base_speed: float = base_speed
 
@@ -29,6 +58,14 @@ class EntityManager:
         self._initialize_tokens()
 
     def update(self, delta_time: float) -> FrameSummary:
+        """Advance entities and resolve collectibles and collisions.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+
+        Returns:
+            Summary of events detected during this update.
+        """
         summary = FrameSummary()
 
         self._update_ghost_states(delta_time)
@@ -71,6 +108,7 @@ class EntityManager:
 
     # Resets all token positions
     def reset_positions(self) -> None:
+        """Restore Pac-Man and ghosts to their initial positions and states."""
         self.pacman.coordinates = self.pacman.init_coord
         assert isinstance(self.pacman.init_coord, tuple)
         py, px = self.pacman.init_coord
@@ -88,6 +126,11 @@ class EntityManager:
 
     # Update Ghost behaviors regarding Delta Time
     def _update_ghost_states(self, delta_time: float) -> None:
+        """Update ghost timers and transition between behavior states.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+        """
         for ghost in self.ghosts:
             if ghost.state == ent.Gs.EATEN and ghost.spawn_snapped:
                 ghost.respawn_timer -= delta_time
@@ -112,6 +155,11 @@ class EntityManager:
 
     # Adjust all ghost states and speed
     def set_ghost_states(self, ghost_state: ent.Gs) -> None:
+        """Apply a behavior state and corresponding speed to each ghost.
+
+        Args:
+            ghost_state: State to apply to ghosts that are not eaten.
+        """
         match ghost_state:
             case (ent.Gs.CHASE | ent.Gs.SCATTER):
                 if self.current_behavior != ent.Gs.FRIGHTENED:
@@ -132,6 +180,7 @@ class EntityManager:
 
     # Initializes all tokens
     def _initialize_tokens(self) -> None:
+        """Create Pac-Man and ghosts and place them on the starting cells."""
         pacman_pos: Cell = self.grid.get_center_position()
         ghosts_pos: list[Cell] = [
             self.grid.get_cell(0, 1),  # Blinky
@@ -165,6 +214,11 @@ class EntityManager:
         self.set_ghost_states(ent.Gs.SCATTER)
 
     def _respawn_ghost(self, ghost: ent.Ghost) -> None:
+        """Return an eaten ghost to its active base behavior.
+
+        Args:
+            ghost: Ghost to respawn.
+        """
         ghost.respawn_timer = 0.0
         ghost.state = self._base_behavior
         ghost.speed = self._base_behavior.value[1] * self.base_speed

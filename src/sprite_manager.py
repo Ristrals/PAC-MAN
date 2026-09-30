@@ -9,7 +9,18 @@ from src.entity import Ghost, Gs, Pacman
 
 
 class SpriteManager:
+    """Load and select sprites for Pac-Man and ghosts.
+
+    Attributes:
+        assets_dir: Root directory containing the sprite assets.
+        ghost_textures: Textures indexed by ghost name and movement state.
+        eyes_textures: Ghost eye textures indexed by movement direction.
+        pacman_textures: Pac-Man animation frames indexed by direction.
+        pacman_last_direction: Most recent direction used by Pac-Man.
+    """
+
     def __init__(self) -> None:
+        """Initialize sprite storage and load all game textures."""
         self.assets_dir: Path = Path("assets/sprites")
         self.ghost_textures: dict[str, dict[Mvt | str, list[arcade.Texture]]] = {}
         self._load_ghost_textures()
@@ -20,6 +31,7 @@ class SpriteManager:
         self._load_pacman_textures()
 
     def _load_ghost_textures(self) -> None:
+        """Load directional, frightened, and respawn ghost textures."""
         for ghost in ["blinky", "pinky", "inky", "clyde"]:
             folder: Path = self.assets_dir / ghost
             self.ghost_textures[ghost] = {
@@ -50,11 +62,13 @@ class SpriteManager:
             }
 
     def _load_eyes_textures(self) -> None:
+        """Load ghost eye textures for each movement direction."""
         folder = self.assets_dir / "eyes"
         for direction in Mvt:
             self.eyes_textures[direction] = arcade.load_texture(folder / f"{direction.value.lower()}.png")
 
     def _load_pacman_textures(self) -> None:
+        """Load Pac-Man animation frames for each movement direction."""
         folder = self.assets_dir / "pacman"
         for direction in Mvt:
             self.pacman_textures[direction] = [
@@ -64,6 +78,14 @@ class SpriteManager:
             ]
 
     def get_ghost_sprites(self, ghost: Ghost) -> list[arcade.Texture]:
+        """Return the textures appropriate for a ghost's current state.
+
+        Args:
+            ghost: Ghost whose current state and direction determine the sprites.
+
+        Returns:
+            A list containing the ghost animation frames or eye texture.
+        """
         ghost_name = type(ghost).__name__.lower()
         if ghost.state == Gs.FRIGHTENED:
             return self.ghost_textures[ghost_name]["frightened"]
@@ -78,6 +100,14 @@ class SpriteManager:
             return [self.ghost_textures[ghost_name]["respawn"][1]]
 
     def get_pacman_sprites(self, pacman: Pacman) -> list[arcade.Texture]:
+        """Return the animation frames appropriate for Pac-Man's direction.
+
+        Args:
+            pacman: Pac-Man entity whose direction determines the sprites.
+
+        Returns:
+            Pac-Man animation frames, or a fallback frame when stationary.
+        """
         if pacman.direction:
             self.pacman_last_direction = pacman.direction
             return self.pacman_textures[pacman.direction]

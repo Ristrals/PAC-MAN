@@ -6,10 +6,22 @@ from src.grid.grid_loader import Grid
 
 
 class Pacman(Token):
+    """Represent the player-controlled Pac-Man entity.
+
+    Attributes:
+        is_powered_up: Whether Pac-Man can defeat ghosts.
+        is_invincible: Whether Pac-Man is temporarily protected from damage.
+    """
+
     is_powered_up: bool = False
     is_invincible: bool = False
 
     def __str__(self) -> str:
+        """Return a formatted description of Pac-Man's current state.
+
+        Returns:
+            A string containing Pac-Man's position, directions, and cell.
+        """
         name = f"{Tc.ylw}Pacman{Tc.clr}"
         y, x = self.coordinates
         to_print = (
@@ -23,6 +35,12 @@ class Pacman(Token):
         return to_print
 
     def move(self, delta_time: float, grid: Grid) -> None:
+        """Move Pac-Man through the grid for one update.
+
+        Args:
+            delta_time: Time elapsed since the previous update.
+            grid: Grid used to update Pac-Man's current cell.
+        """
         if not self.active:
             return
 
