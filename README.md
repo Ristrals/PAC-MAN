@@ -1,8 +1,15 @@
 *This project has been created as part of the 42 curriculum by juruan, kmalfois*
 
 -------------------------------------------------------------------------------
-PACMAN Project
-=============
+```text
+  ● ● ● ●       ● ● ●         ● ● ●               ●       ●     ● ● ●     ●       ●
+  ●       ●   ●       ●     ● ● ● ● ●             ● ●   ● ●   ●       ●   ● ●     ●
+  ●       ●   ●       ●   ● ● ● ●                 ●   ●   ●   ●       ●   ●   ●   ●
+  ● ● ● ●     ● ● ● ● ●   ● ● ●           • • •   ●   ●   ●   ● ● ● ● ●   ●     ● ●
+  ●           ●       ●   ● ● ● ●                 ●       ●   ●       ●   ●       ●
+  ●           ●       ●     ● ● ● ● ●             ●       ●   ●       ●   ●       ●
+  ●           ●       ●       ● ● ●               ●       ●   ●       ●   ●       ●
+```
 
 -------------------------------------------------------------------------------
 # DESCRIPTION
@@ -115,49 +122,336 @@ uv run python3 pac-man.py data/configuration.json
 
 -------------------------------------------------------------------------------
 # CONFIGURATION
+The game is configured with a JSON file given as the first argument of the
+program. The default one is `data/configuration.json`:
+
+```json
+{
+    "lives": 3,
+    "seed": 42,
+    "pacgum": 42,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200,
+    "level_max_time": 90,
+    "highscore_filename": "highscores.json",
+    "levels": [
+        {"width": 15, "height": 15},
+        {"width": 15, "height": 16},
+        ...
+        {"width": 20, "height": 20}
+    ]
+}
+```
+
+## KEYS AND DEFAULT VALUES
+| Key | Type | Default | Valid values | Description |
+|-----|------|---------|--------------|-------------|
+| `lives` | int | `3` | ≥ 1 | Number of lives at the start of the game. |
+| `seed` | int | `42` | ≥ 1 | Seed used to generate the maze of the first level. |
+| `pacgum` | int | `42` | ≥ 1 | Number of pacgums placed in each maze. |
+| `points_per_pacgum` | int | `10` | ≥ 1 | Points for eating a pacgum. |
+| `points_per_super_pacgum` | int | `50` | ≥ 1 | Points for eating a super pacgum. |
+| `points_per_ghost` | int | `200` | ≥ 1 | Points for eating a ghost. |
+| `level_max_time` | int | `90` | ≥ 1 | Time limit of each level, in seconds. |
+| `highscore_filename` | string | `"highscores.json"` | any string | Name of the highscore file, saved in the `data/` directory. |
+| `levels` | list | one 15 × 15 level | list of levels | Maze size of each level, in order. |
+
+Each element of `levels` is an object with:
+
+| Key | Type | Default | Valid values | Description |
+|-----|------|---------|--------------|-------------|
+| `width` | int | `15` | 5 to 25 | Number of columns of the maze. |
+| `height` | int | `15` | 5 to 25 | Number of rows of the maze. |
+
+The number of levels of the game is the length of `levels`. The provided
+configuration file has 10 levels, from 15 × 15 to 20 × 20.
+
+## ERROR HANDLING
+The configuration is loaded with pydantic. The game tries to start whenever
+possible:
+- **Missing key**: a warning is printed and the default value is used.
+- **Invalid value** (wrong type or out of range): a warning is printed and
+  the default value is used.
+- **Empty or missing `levels`**: one default 15 × 15 level is used.
+- **JSON root not an object**: all default values are used.
+- **Unknown keys** are ignored.
+
+The program stops with an error message only when the configuration file
+cannot be read:
+- no file path is given, or the file does not exist;
+- the content is not valid JSON.
+
+## COMMENTS
+The configuration file may contain comments, which are removed before
+parsing:
+```
+# comment until the end of the line
+// comment until the end of the line
+/* block comment,
+   on several lines */
+```
+A block comment that is never closed is an error.
 
 -------------------------------------------------------------------------------
 # HIGHSCORE
 
 -------------------------------------------------------------------------------
 # MAZE GENERATION
+Mazes are generated with the `mazegenerator` package from the A-Maze-ing
+project, provided as the local wheel `mazegenerator-2.1.0-py3-none-any.whl`.
+It is used in `src/grid/grid_loader.py`.
+
+## USING THE PACKAGE
+For each level, the `Grid` class creates a `MazeGenerator` with the level
+size from the configuration:
+
+```python
+m = MazeGenerator(size=(width, height), perfect=False)
+if isinstance(seed, int):
+    m.generate(seed=seed)
+```
+
+- **`perfect=False`**: a perfect maze has exactly one path between two cells,
+  so it is full of dead ends where Pac-Man would be trapped by the ghosts.
+  With `perfect=False`, the generator opens extra walls to create loops and
+  removes every dead end, which gives a maze that is playable as Pac-Man.
+- **Seed**: creating a `MazeGenerator` already generates a random maze. For
+  the first level, the maze is generated again with `generate(seed=...)`
+  using the `seed` of the configuration, so level 1 is always the same maze.
+  The other levels keep the random maze.
+- **"42" pattern**: when the maze is big enough (at least 14 × 10), the
+  generator draws a "42" in the middle with fully closed cells. These cells
+  are drawn in blue and cannot be entered.
+
+## FROM THE GENERATOR TO THE GRID
+`m.maze` is a 2D list of integers. Each integer is a 4-bit mask of the walls
+around one cell (a set bit means a wall):
+
+| Bit | Value | Wall |
+|-----|-------|------|
+| 0 | 1 | North |
+| 1 | 2 | East |
+| 2 | 4 | South |
+| 3 | 8 | West |
+
+For example, `9` (`1 + 8`) is a cell with walls on the north and west sides,
+and `15` is a fully closed cell. Each value is converted into a `Cell` object
+(`src/grid/cell.py`) with four booleans (`north`, `east`, `south`, `west`)
+telling whether Pac-Man and the ghosts can leave the cell in that direction.
+
+## PLACING THE PACGUMS
+Once the grid is built, `Grid.place_items()` fills it:
+- a **super pacgum** in each of the four corners;
+- **pacgums** (`pacgum` in the configuration) on random cells that are
+  empty, not closed and not Pac-Man's start cell in the center. If there
+  are not enough free cells, the number is reduced and a warning is printed.
 
 -------------------------------------------------------------------------------
 # IMPLEMENTATION
 
--------------------------------------------------------------------------------
-# GENERAL SOFTWARE ARCHITETURE
+## CONFIGURATION LOADING (`src/config.py`)
+- The configuration is described by two pydantic models: `GameConfig` for
+  the global settings and `LevelConfig` for the size of one level.
+- Each field has a `field_validator` in `mode="before"`. It checks the raw
+  value before pydantic converts it, and replaces an invalid value by the
+  field's default with a warning, instead of raising an error. This way a
+  single bad value does not stop the game.
+- Before `json.loads`, `strip_comments()` removes `#`, `//` and `/* */`
+  comments by reading the text character by character. It keeps track of
+  whether it is inside a string, so a `#` inside a string is kept. Newlines
+  inside block comments are kept, so JSON error line numbers still match the
+  original file.
+- Errors that make the file unreadable raise a custom `ParsingError`, which
+  is caught in `__main__.py` to print the message and exit.
 
-- **Makefile**: Command file.
-- **README.md**: Program guide and information.
-- **[assets]**: images used in README.md.
-- **[maps]**: map files.
-- **[output]**: Simulation's data as JSON file.
-- **[src]**: Contains all program files.
- - **__init__.py**: Module init file.
- - **__main__.py**: Module main file.
- - **arbiter.py**: Decision maker.
- - **cogitator.py**: Drone trajectory calculation.
- - **connection.py**: Connection object class.
- - **data_exporter.py**: Data export module.
- - **data_lib.py**: Custom pydantic type library.
- - **drone.py**: Drone object class.
- - **error_handler.py**: Error handler.
- - **hub.py**: Hub object class.
- - **interface.py**: Program interface.
- - **navigator.py**: Map data parsing and extraction.
- - **operator.py**: Orchestrator and simulation runner.
-- **[visualizer]**: Contains all visualization files.
-  - **simulation_data**.json: JSON result of a simulation.
-  - **visualizer.pck**: GoDot file.
-  - **visualizer.sh**: GoDot file.
-  - **visualizer.x86_64**: Visualizer executable file.
-- **.flake8**: Flake8 ignore rules.
-- **.gitignore**: Files ignored by git.
-- **all_run.py**: Small script to test all available maps
-- **.mypy**: mypy directives, excluded files from mypy check
-- **pyproject.toml**: Package directives for uv
-- **uv.lock**: uv.lock
+## GRID (`src/grid/`)
+- `Grid` (`grid_loader.py`) wraps the `mazegenerator` package: it generates
+  the maze and converts each wall value into a `Cell` (see
+  [MAZE GENERATION](#maze-generation)).
+- `Cell` (`cell.py`) is a dataclass with its position, four booleans for the
+  open sides and its content (`EMPTY`, `PACGUM` or `SUPER_PACGUM`).
+  `can_exit(direction)` tells whether an entity can leave the cell in a
+  direction; it is the only wall check the entities need.
+- `Grid` also provides:
+  - `get_cell(y, x)`: returns a cell, with coordinates clamped to the grid
+    so it never goes out of range;
+  - `place_items()`: places the super pacgums and pacgums;
+  - `get_center_position()`: the start cell of Pac-Man, in the gap between the "4" and the "2";
+  - `is_all_empty()`: used by the game loop to know when a level is cleared.
+
+## MENUS AND INTERFACE (`src/main_menu.py`, `src/end_view.py`, `src/game_view.py`)
+Each screen is an arcade `View`, and screens are changed with
+`window.show_view()`:
+
+```
+MainMenuView ──Start──> GameView ──win / game over──> EndView ──Enter──> MainMenuView
+                           │
+                           └──pause menu: Main menu──> MainMenuView
+```
+
+The window is created in `__main__.py` at 85% of the screen size. In every
+menu, the selected option is stored as an index, highlighted in blue with a
+`>` in front, and confirmed with Enter.
+
+**Main menu (`MainMenuView`)**
+- Shows the title, the top 10 highscores in two columns of five (empty
+  slots show `---`), the `Start` / `Exit` options (chosen with Left / Right)
+  and a bottom bar with the controls.
+- The highscores are read with the `ScoreManager`. If the highscore file
+  cannot be opened, the error is printed and the menu is shown without
+  highscores.
+- `Start` creates a new `GameView`. If the game cannot start, the error is
+  printed and the menu stays open.
+
+**End screen (`EndView`)**
+- Shown after a victory (`YOU WIN!!`, in green) or a game over
+  (`GAME OVER...`, in orange), with the final score.
+- The player types a name in an input box: letters, digits and spaces, up
+  to 10 characters, uppercase with Shift, Backspace to delete.
+- Enter saves the name and score in the highscore file (only if the name
+  has at least 3 characters) and goes back to the main menu.
+
+**HUD** (`GameView.draw_hud`, `GameView.draw_page`)
+- At the top: the lives (one heart per life), the level, the score and the
+  timer (rounded down to whole seconds).
+- At the bottom: an orange bar recalling the controls (arrows, `P`, `C`).
+
+**Pause menu and cheat panel**
+- They are not separate views: `GameView` draws them over the game as a
+  semi-transparent black layer, controlled by the `pause` and `cheat_mode`
+  flags. While one of them is open, `on_update()` does nothing, so the game
+  is frozen.
+- **Pause** (`P`): `RESUME` / `MAIN MENU`, chosen with Up / Down.
+- **Cheat panel** (`C`): shows each cheat with its key and its current
+  state (`ON` / `OFF`, number of lives):
+  - `I` invincibility: sets `is_invincible` on Pac-Man, so the ghosts
+    cannot catch him;
+  - `F` freeze: sets `ghost_freeze` in the `EntityManager`, so the ghosts
+    stop moving;
+  - `N` skip level: calls `next_level()` (not available on the last level);
+  - `L` extra life: adds one life.
+- The invincibility and freeze states are kept when a new level is loaded.
+
+## GAME LOOP (`src/game_view.py`)
+arcade calls `on_key_press()`, `on_update()` and `on_draw()` on the current
+view.
+
+**Input (`on_key_press`)** is handled by priority: first the pause menu,
+then the cheat panel, then the movement. A key used by a menu is not
+passed to Pac-Man. An arrow key stores the next direction in Pac-Man's
+`buffered_direction` and starts the game.
+
+**Update (`on_update`)**, once per frame:
+1. Nothing happens while the game is paused, the cheat panel is open, or
+   the player has not pressed an arrow key yet.
+2. The frame time is capped at 1/30 s, so a lag spike cannot move an entity
+   through a wall or past a collision.
+3. The timer goes down and the entities are updated by the `EntityManager`,
+   which returns a summary of the frame (pacgum eaten, ghosts eaten, Pac-Man
+   caught).
+4. The game view adds the points from the summary and handles the result: a
+   lost life (positions reset, wait for a key), game over, level cleared
+   (next level or victory), or time out.
+
+**Drawing (`on_draw`)** draws the maze, the pacgums, the sprites, the HUD
+and the bottom bar, then the pause menu or cheat panel on top.
+- The maze takes at most 60% of the window, with square cells, and is
+  centered. The cell size and offsets are computed in
+  `calculate_render_params()` and recomputed in `on_resize()`, so the game
+  follows the window size.
+- The grid counts rows from the top, but arcade counts y from the bottom,
+  so the row index is flipped when converting a cell to screen coordinates.
+- Walls are drawn as lines on the closed sides of each cell, and the cells
+  of the "42" are filled in blue.
+
+**Levels**: `load_level()` builds a new `Grid` and a new `EntityManager` for
+the current level and resets the timer. The score, lives and cheat states
+are kept from one level to the next.
+
+-------------------------------------------------------------------------------
+# GENERAL SOFTWARE ARCHITECTURE
+
+## FILE TREE
+```
+pacman/
+├── pac-man.py                  # Launcher: python3 pac-man.py <config.json>
+├── Makefile                    # install, run, lint, package...
+├── pyproject.toml              # Dependencies for uv
+├── uv.lock                     # Locked dependency versions
+├── mazegenerator-2.1.0-...whl  # A-Maze-ing maze generator package
+├── mypy.ini / .flake8          # Lint settings
+│
+├── assets/sprites/             # Sprite images
+│   ├── pacman/                 #   Pac-Man: 3 frames per direction
+│   ├── blinky/ pinky/          #   Ghosts: 2 frames per direction,
+│   ├── inky/ clyde/            #   frightened, sleep and wake frames
+│   └── eyes/                   #   Eaten ghost (eyes only)
+│
+├── data/
+│   ├── configuration.json      # Default game configuration
+│   ├── highscores.json         # Saved highscores (created at runtime)
+│   └── highscores_default.json # Default highscore list
+│
+└── src/
+    ├── __main__.py             # Entry point: loads the config, opens the window
+    ├── config.py               # Config models (pydantic) and loader
+    ├── error.py                # Custom exceptions
+    ├── data_lib.py             # Shared enums (Movements, colors)
+    │
+    ├── main_menu.py            # View: main menu + highscores
+    ├── game_view.py            # View: game loop, HUD, pause, cheat mode
+    ├── end_view.py             # View: victory / game over, name input
+    │
+    ├── grid/
+    │   ├── grid_loader.py      # Grid: maze generation, pacgum placement
+    │   └── cell.py             # Cell: walls and content of one cell
+    │
+    ├── entity_manager.py       # Updates all entities, collisions, score events
+    ├── entity/
+    │   ├── token.py            # Base class of every moving entity
+    │   ├── pacman.py           # Pac-Man
+    │   ├── ghost.py            # Base ghost: states and movement
+    │   └── blinky.py pinky.py  # The four ghosts and their targets
+    │       inky.py clyde.py
+    │
+    ├── sprite_manager.py       # Loads textures for each entity and state
+    └── score.py                # Highscore file: read, sort, save
+```
+
+## HOW THE MODULES WORK TOGETHER
+```
+                         pac-man.py
+                             │
+                             ▼
+                        __main__.py ─────────► config.py ──► data/configuration.json
+                             │
+                             ▼
+   ┌───────────────► main_menu.py ─────────────► score.py ──► data/highscores.json
+   │                         │ Start                 ▲
+   │                         ▼                       │
+   │                   game_view.py                  │
+   │          ┌──────────┬───┴───────┬──────────┐    │
+   │          ▼          ▼           ▼          ▼    │
+   │     grid_loader  entity_     sprite_   end_view.py
+   │          │       manager     manager      │
+   │          ▼          │                     │ Enter
+   │   mazegenerator     ▼                     │
+   │      + cell.py   entity/                  │
+   │                (Pac-Man, ghosts)          │
+   └───────────────────────────────────────────┘
+```
+
+- **Views** (`main_menu`, `game_view`, `end_view`) are the arcade screens.
+  Only one is shown at a time.
+- **`game_view`** is the center of the game. Each level, it creates a `Grid`
+  and an `EntityManager`, then on each frame it updates them and draws the
+  result with the textures of the `SpriteManager`.
+- **`grid`** knows the maze (walls and pacgums), **`entity`** knows how
+  Pac-Man and the ghosts move in it, and **`entity_manager`** connects them
+  (movements, collisions, points).
+- **`score`** is used by the main menu (to show the highscores) and by the
+  end screen (to save a new score).
 
 -------------------------------------------------------------------------------
 # PROJECT MANAGEMENT
