@@ -1,3 +1,5 @@
+"""Game screen: runs the levels, draws the maze and handles input."""
+
 from src.config import GameConfig, load_config
 from src.grid.grid_loader import Grid
 from src.grid.cell import StateType
@@ -12,12 +14,50 @@ import arcade
 
 
 class GameView(arcade.View):
+    """Game screen where Pac-Man is played.
+
+    Loads each level, updates the entities, keeps the score, the lives
+    and the timer, and draws the maze, the sprites, the HUD and the
+    pause and cheat menus. The game only starts moving after the first
+    arrow key is pressed, and after each lost life.
+
+    Attributes:
+        config: Game configuration.
+        current_level: Number of the current level, starting at 1.
+        start: Whether the game is running (an arrow key was pressed).
+        pause: Whether the pause menu is open.
+        cheat_mode: Whether the cheat panel is open.
+        invincible: Whether Pac-Man is invincible (cheat).
+        ghost_freeze: Whether the ghosts are frozen (cheat).
+        lives: Remaining lives of the player.
+        options: Labels of the pause menu options.
+        selected: Index of the selected option in ``options``.
+        score: Current score.
+        animation_timer: Time used to animate the sprites, in seconds.
+        sprite_manager: Loader of the Pac-Man and ghost textures.
+        ghost_sprites: Sprite list of the ghosts.
+        ghost_sprite_map: Ghost sprite for each ghost, keyed by
+            ``id(ghost)``.
+        pacman_sprite_list: Sprite list holding the Pac-Man sprite.
+        pacman_sprite: Sprite of Pac-Man, or ``None`` before setup.
+        grid: Maze of the current level.
+        entity_manager: Manager of Pac-Man and the ghosts.
+        time_left: Time left to clear the level, in seconds.
+        cell_size: Size of one maze cell on screen, in pixels.
+        offset_x: Horizontal position of the maze on screen.
+        offset_y: Vertical position of the maze on screen.
+    """
+
     def __init__(self, config: GameConfig) -> None:
+        """Initialize the game screen and load the first level.
+
+        Args:
+            config: Game configuration.
+        """
         super().__init__()
         self.config = config
         self.current_level = 1
         self.start = False
-        self.is_all_empty = False
         self.pause = False
         self.cheat_mode = False
         self.invincible = False
@@ -37,6 +77,11 @@ class GameView(arcade.View):
         self.load_level()
 
     def calculate_render_params(self) -> None:
+        """Compute the cell size and the maze position on screen.
+
+        The maze takes at most 60% of the window width and height,
+        keeps square cells and is centered in the window.
+        """
         cell_size_w = (self.window.width * 0.6) / self.grid.width
         cell_size_h = (self.window.height * 0.6) / self.grid.height
         self.cell_size = min(cell_size_w, cell_size_h)
@@ -44,6 +89,12 @@ class GameView(arcade.View):
         self.offset_y = (self.window.height - self.grid.height * self.cell_size) / 2
 
     def load_level(self) -> None:
+        """Build the maze and the entities of the current level.
+
+        The first level is generated with the configuration seed; the
+        next levels are generated randomly. The timer is reset, the
+        cheat states are kept, and the game waits for an arrow key.
+        """
         level_config = self.config.levels[self.current_level - 1]
         seed = self.config.seed if self.current_level == 1 else None
         self.grid = Grid(
@@ -61,6 +112,10 @@ class GameView(arcade.View):
         self.setup_sprites()
 
     def next_level(self) -> None:
+        """Go to the next level.
+
+        Shows the victory screen if the last level was cleared.
+        """
         self.current_level += 1
         if self.current_level > len(self.config.levels):
             self.window.show_view(EndView(self.score, self.config, True))
@@ -68,6 +123,12 @@ class GameView(arcade.View):
         self.load_level()
 
     def on_draw(self) -> None:
+        """Draw the whole game screen.
+
+        Draws the maze, the pacgums, Pac-Man and the ghosts, the HUD
+        and the bottom bar, then the pause menu or the cheat panel if
+        one of them is open.
+        """
         self.clear()
         self.draw_maze()
         self.draw_items()
@@ -80,6 +141,11 @@ class GameView(arcade.View):
             self.draw_cheat_panel()
 
     def draw_maze(self) -> None:
+        """Draw the walls of the maze.
+
+        Each missing passage of a cell is drawn as a white line. Cells
+        closed on all four sides are filled in blue.
+        """
         for row in self.grid.grid:
             for cell in row:
                 px = self.offset_x + cell.x * self.cell_size
@@ -130,6 +196,7 @@ class GameView(arcade.View):
                     )
 
     def draw_items(self) -> None:
+        """Draw the pacgums (yellow) and the super pacgums (pink)."""
         for row in self.grid.grid:
             for cell in row:
                 px = self.offset_x + cell.x * self.cell_size
@@ -152,6 +219,13 @@ class GameView(arcade.View):
                     )
 
     def draw_token(self) -> None:
+        """Draw Pac-Man and the ghosts with their animations.
+
+        Pac-Man cycles through its mouth frames. Ghosts switch between
+        two frames. A frightened ghost blinks during the last 2
+        seconds of the frightened state, and an eaten ghost back at
+        its spawn blinks during the last 2 seconds before respawning.
+        """
         # 0. Calculate animation frame index (toggles between 0 and 1 at ~8 FPS)
         frame_idx = 0 if int(self.animation_timer * 8) % 2 == 0 else 1
 
@@ -212,6 +286,7 @@ class GameView(arcade.View):
         self.ghost_sprites.draw()
 
     def draw_cheat_panel(self) -> None:
+        """Draw the cheat panel with the cheat keys and their state."""
         arcade.draw_lbwh_rectangle_filled(
             0,
             0,
@@ -237,6 +312,7 @@ class GameView(arcade.View):
             )
 
     def draw_hud(self) -> None:
+        """Draw the lives, level, score and timer at the top."""
         arcade.draw_text(
             "❤️" * self.lives,
             self.window.width / 10,
@@ -271,6 +347,7 @@ class GameView(arcade.View):
         )
 
     def draw_pause_menu(self) -> None:
+        """Draw the pause menu with the selected option highlighted."""
         arcade.draw_lbwh_rectangle_filled(
             0,
             0,
@@ -296,6 +373,7 @@ class GameView(arcade.View):
             )
 
     def draw_page(self) -> None:
+        """Draw the bottom bar showing the game controls."""
         arcade.draw_lbwh_rectangle_filled(
             0,
             0,
@@ -329,6 +407,21 @@ class GameView(arcade.View):
         )
 
     def on_key_press(self, key: int, modifiers: int) -> None:
+        """Handle a key press.
+
+        - ``P`` opens or closes the pause menu. While paused, Up/Down
+          select an option and Enter confirms it (resume, or go back
+          to the main menu).
+        - ``C`` opens or closes the cheat panel. While it is open,
+          ``I`` toggles invincibility, ``N`` skips to the next level
+          (except on the last one), ``F`` freezes the ghosts and ``L``
+          adds a life.
+        - Arrow keys set Pac-Man's next direction and start the game.
+
+        Args:
+            key: Code of the pressed key.
+            modifiers: Bit mask of the active modifier keys (unused).
+        """
         # pause menu
         if key == arcade.key.P:
             self.pause = not self.pause
@@ -344,7 +437,7 @@ class GameView(arcade.View):
                     self.pause = not self.pause
                 elif self.selected == 1:
                     from src.main_menu import MainMenuView
-                    menu = MainMenuView(load_config("data/configuration.json"))
+                    menu = MainMenuView(self.config)
                     self.window.show_view(menu)
             return
 
@@ -382,6 +475,19 @@ class GameView(arcade.View):
             self.entity_manager.pacman.buffered_direction = Movements.RIGHT
 
     def on_update(self, delta_time: float) -> None:
+        """Update the game for one frame.
+
+        Does nothing while the game is paused, the cheat panel is open
+        or the game has not started. The frame time is capped at 1/30
+        second so that a lag spike cannot move the entities through
+        walls. Updates the timer and the entities, adds the points
+        earned, and handles a lost life (reset of the positions, or
+        game over when no life is left), a cleared level and the end
+        of the timer.
+
+        Args:
+            delta_time: Time since the last frame, in seconds.
+        """
         if self.pause or self.cheat_mode or not self.start:
             return
         dt = min(delta_time, 1 / 30.0)
@@ -414,7 +520,11 @@ class GameView(arcade.View):
             self.window.show_view(EndView(self.score, self.config, False))
 
     def setup_sprites(self) -> None:
-        """Creates Arcade sprites using pre-loaded textures from SpriteManager."""
+        """Create the Pac-Man and ghost sprites of the current level.
+
+        Uses the textures loaded by the sprite manager. Each sprite is
+        scaled to 80% of a cell and placed on its entity.
+        """
         self.pacman_sprite_list.clear()
         self.ghost_sprites.clear()
         self.ghost_sprite_map.clear()
@@ -445,6 +555,12 @@ class GameView(arcade.View):
             self.ghost_sprites.append(ghost_sprite)
 
     def on_resize(self, width: int, height: int) -> None:
+        """Recompute the layout and rescale the sprites.
+
+        Args:
+            width: New window width, in pixels.
+            height: New window height, in pixels.
+        """
         super().on_resize(width, height)
         self.calculate_render_params()
         for ghost_sprite in self.ghost_sprites:
