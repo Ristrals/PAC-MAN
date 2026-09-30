@@ -55,7 +55,7 @@ class GameView(arcade.View):
         self.entity_manager = EntityManager(self.grid, base_speed=5.0)
         self.entity_manager.pacman.is_invincible = self.invincible
         self.entity_manager.ghost_freeze = self.ghost_freeze
-        self.time_left = self.config.level_max_time
+        self.time_left: float = self.config.level_max_time
         self.start = False
         self.calculate_render_params()
         self.setup_sprites()
@@ -387,7 +387,7 @@ class GameView(arcade.View):
         dt = min(delta_time, 1 / 30.0)
         self.animation_timer += dt
         if self.start:
-            self.time_left -= int(dt)
+            self.time_left -= dt
         summary = self.entity_manager.update(dt)
         if summary.eat_pacgum:
             self.score += self.config.points_per_pacgum
