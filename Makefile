@@ -18,7 +18,7 @@ clean:
 dclean:
 	rm -rf build
 	rm -rf dist
-	rm pacman.spec
+	rm -rf pacman.spec
 
 fclean: clean dclean
 	rm -rf .venv
