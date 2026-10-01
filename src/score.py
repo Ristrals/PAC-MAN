@@ -116,12 +116,13 @@ class ScoreManager:
         Args:
             highscore_filename: Name of the highscore file in the data directory.
         """
+        self.filename: Path = Path(highscore_filename)
         if getattr(sys, "frozen", False):
             self._root_path: Path = Path(sys.executable).parent
         else:
             self._root_path = Path(__file__).parent.parent
         self._score_directory_path: Path = self._root_path / "data"
-        self._score_file_path: Path = self._score_directory_path / f"{highscore_filename}"
+        self._score_file_path: Path = self._score_directory_path / self.filename
         self._is_valid_score_board: bool = True
         self.score_board: list[Score] = []
         self.player_score: Score = Score(name="Player", score=0)
@@ -139,7 +140,6 @@ class ScoreManager:
             try:
                 self.load_scores()
             except ScErr as se:
-                # print(f"{se.err_type}")
                 if se.err_type in ("json_invalid", "missing"):
                     print(se)
                     self.reset_score_board()
@@ -175,10 +175,9 @@ class ScoreManager:
         entries_json = json.dumps(entries)
         self.score_board = ScoreBoard.validation_mitigation(entries_json).scores
         if not self._is_valid_score_board:
-            target_file = "data/highscores.json"
+            target_file = self._score_file_path
             if os.path.exists(target_file):
-                os.rename(target_file, "data/highscores-temp.json")
-            self._score_file_path = self._score_directory_path / "highscores.json"
+                os.rename(target_file, self._score_directory_path / f"{self.filename.stem}-temp.json")
         with open(self._score_file_path, "w", encoding="utf-8") as score_file:
             json.dump([scr.model_dump() for scr in self.score_board], score_file, indent=4)
 
