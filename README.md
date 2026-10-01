@@ -1,17 +1,11 @@
 *This project has been created as part of the 42 curriculum by juruan, kmalfois*
 
--------------------------------------------------------------------------------
-```text
-  ● ● ● ●       ● ● ●         ● ● ●               ●       ●     ● ● ●     ●       ●
-  ●       ●   ●       ●     ● ● ● ● ●             ● ●   ● ●   ●       ●   ● ●     ●
-  ●       ●   ●       ●   ● ● ● ●                 ●   ●   ●   ●       ●   ●   ●   ●
-  ● ● ● ●     ● ● ● ● ●   ● ● ●           • • •   ●   ●   ●   ● ● ● ● ●   ●     ● ●
-  ●           ●       ●   ● ● ● ●                 ●       ●   ●       ●   ●       ●
-  ●           ●       ●     ● ● ● ● ●             ●       ●   ●       ●   ●       ●
-  ●           ●       ●       ● ● ●               ●       ●   ●       ●   ●       ●
-```
+<div align="center">
 
--------------------------------------------------------------------------------
+![TITLE](assets/readme/TITLE.png)
+
+</div>
+
 # DESCRIPTION
 
 This project is a remake of the classic arcade game **Pac-Man**, written in
@@ -195,6 +189,27 @@ A block comment that is never closed is an error.
 
 -------------------------------------------------------------------------------
 # HIGHSCORE
+
+Highscores regroup the entire list of scores performed in the game, they are stored in `data/highscores.json`.\
+Note that this file does not exist until a player has registered a score for the first time.
+
+This JSON string respects the following schema:
+```json
+[
+    {
+        "name": "Iwatani",
+        "score": 1337
+    },
+    {
+        "name": "Pacman",
+        "score": 1980
+    }
+]
+```
+In case of corrupted JSON string or incorrect entries, the current `highscores.json` will be renamed `highscores-temp.json` and a fresh score file will be created.\
+This acts as error mitigation for the program to continue while preventing potential data loss from the original highscores file.
+
+A `highscores_default.json` file is also available. It can be duplicated and renamed `highscores.json` in case the user wants to reinitialize his game's scoreboard.
 
 -------------------------------------------------------------------------------
 # MAZE GENERATION
@@ -382,11 +397,14 @@ pacman/
 ├── mazegenerator-2.1.0-...whl  # A-Maze-ing maze generator package
 ├── mypy.ini / .flake8          # Lint settings
 │
-├── assets/sprites/             # Sprite images
-│   ├── pacman/                 #   Pac-Man: 3 frames per direction
-│   ├── blinky/ pinky/          #   Ghosts: 2 frames per direction,
-│   ├── inky/ clyde/            #   frightened, sleep and wake frames
-│   └── eyes/                   #   Eaten ghost (eyes only)
+├── assets/                         
+│   ├── sprites/                # Sprite images    
+│   │   ├── pacman/             #   Pac-Man: 3 frames per direction
+│   │   ├── blinky/ pinky/      #   Ghosts: 2 frames per direction,
+│   │   ├── inky/ clyde/        #   frightened, sleep and wake frames
+│   │   └── eyes/               #   Eaten ghost (eyes only)
+│   │
+│   └── readme/                 # README.md assets            
 │
 ├── data/
 │   ├── configuration.json      # Default game configuration
@@ -454,19 +472,96 @@ pacman/
   end screen (to save a new score).
 
 -------------------------------------------------------------------------------
+# TOKENS
+
+
+Tokens are the entity that represents Pacman and the Ghosts.
+
+This class manages tools and attributes required by all tokens for pacman and ghosts to inherit. This includes the reset position method, cell center detection and various info recovery properties for coordinates and states.
+
+## PACMAN
+Unlike ghosts, pacman’s movements are managed by the player.\
+To do so, the Game Loop will listen for user inputs and pass them to Pacman's entity, which will then respond if the situation allows it.
+
+Pacman also possesses a specific *is_invincible* attribute in case the respective cheat mode is activated.\
+If turned on, collision detection between Pacman and ghosts will not result in defeat, yet he will still be able to feast on enemies if they're frightened.
+
+## GHOSTS
+
+### MOVEMENT
+Ghosts possess a different movement system, following a distance based algorithm.
+
+Regarding their current position, they will always choose a direction that brings them closer to their targeted location, except if eaten.\
+This allows the player to toy around with their behavior if they can figure it out, but be careful not to take our little wraiths lightly either.
+
+During the EATEN state, Ghosts will instead refer to a classic BFS model, to ensure they'll reach their spawn tile no matter the distance and maze layout.
+
+### STATES
+Ghosts refers to their behavior by using a state system:
+- **SCATTER**: Returns them toward their spawn point
+- **CHASE**: Chase their target tile
+- **FRIGHTENED**: Immediate 180% then follow random directions
+- **EATEN**: Use BFS to return to spawn, then wait 5s before switching to chase or scatter
+
+In a regular game loop, respectively to the old Arcade Game, ghosts will alternate between 5s of SCATTER and 20s to CHASE states.\
+This allows the player to have some breathing room instead of being chased relentlessly the whole game.
+
+-------------------------------------------------------------------------------
+# GHOST BEHAVIOR
+
+## Algorithms
+Ghost behavior defines their targeted tile regarding their current state.\
+As mentioned, all states use the classic distance based method except the EATEN state (BFS)
+
+## Ghosts
+The true difference between ghosts comes from their CHASE tile targeting. Each one has a different way to calculate their destination to challenge the player during a party.
+
+### Blinky
+Blinky, the red ghost, is the most simple and direct.\
+He will aim straight for Pacman's immediate location, being an active threat for the player no matter where they are.
+
+![Blinky_behavior](assets/readme/Blinky_behavior.png)
+
+### Inky
+Inky, the cyan ghost, is goofy and cunning.\
+His role is the flanker, he calculates his destination by referring to Blinky's position relative to Pacman's, and then offsetting it by 2 tiles relative to Pacman's direction. This way he's always around the corner for a pincer attack with his red leader.
+
+![Inky_behavior](assets/readme/Inky_behavior.png)
+
+### Pinky
+Pinky, the fuchsia ghost, is adorably mischievous.\
+Her favourite job his to anticipate Pacman's path to cut him out. To do so she will always target 4 tiles ahead of pacman's current direction.
+
+![Pinky_behavior](assets/readme/Pinky_behavior.png)
+
+### Clyde
+Clyde, the orange ghost, is lazy and brainless... or is he?\
+He refers to a specific behavior, chase Pacman if he is more than 8 tiles away, or flee from him and return to his spawn point if he's closer than 8 tiles.\
+Following this guideline, Clyde will gravitate around Pacman, and, in some cases, become wildly unpredictible when he decides to flee the player from certain angles.
+
+![Clyde_behavior](assets/readme/Clyde_behavior.png)
+
+-------------------------------------------------------------------------------
 # PROJECT MANAGEMENT
+### Project organization:
 
--------------------------------------------------------------------------------
-# PROGRAM
+Project hosted on GitHub central repository: https://github.com/Ristrals/PAC-MAN \
+Project organization was managed using a Kanban setup.
 
--------------------------------------------------------------------------------
-# CODE ARCHITECTURE
+### Task distribution:
 
--------------------------------------------------------------------------------
-# ALGORITHM
+**Jun Ruan**:
+- Configuration parsing and error handling
+- Arcade Game View development
+- Arcade Game Loop development
+- Cheat modes and graphic interface integration
+- Maze generator integration
 
--------------------------------------------------------------------------------
-# INTERFACE GRAPHIC
+**Malfois Kevin**:
+- Highscore parsing and error handling
+- Token movement system and collision detection
+- Ghosts Behavior algorithms
+- Graphic assets
 
 -------------------------------------------------------------------------------
 # CONCLUSION
