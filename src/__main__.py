@@ -8,9 +8,11 @@ defaults to ``data/configuration.json``.
 """
 
 import sys
+import warnings
+import arcade
+from arcade.exceptions import PerformanceWarning
 from src.config import load_config
 from src.main_menu import MainMenuView
-import arcade
 
 
 def main() -> None:
@@ -28,6 +30,7 @@ def main() -> None:
         SystemExit: If no configuration path is given (outside a
             frozen executable), or if the configuration fails to load.
     """
+    warnings.filterwarnings("ignore", category=PerformanceWarning)
     if len(sys.argv) > 1:
         config_path = sys.argv[1]
     elif getattr(sys, "frozen", False):
