@@ -7,7 +7,7 @@
 #   By: junruan <junruan@student.42.fr>              +#+  +:+       +#+       #
 #                                                  +#+#+#+#+#+   +#+          #
 #   Created: 2026/08/17 18:26:14 by junruan             #+#    #+#            #
-#   Updated: 2026/09/29 19:03:05 by junruan            ###   ########.fr      #
+#   Updated: 2026/10/01 16:21:47 by junruan            ###   ########.fr      #
 #                                                                             #
 # ########################################################################### #
 
@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, ValidationError
 from pydantic import ValidationInfo, field_validator
 from src.error import ParsingError
 import json
+from pathlib import Path
 
 
 class LevelConfig(BaseModel):
@@ -135,6 +136,10 @@ class GameConfig(BaseModel):
         assert field_name is not None
         default = str(cls.model_fields[field_name].default)
         if not isinstance(v, str):
+            print(f"Warning: {field_name} = {v} invalid, using {default}")
+            return default
+        path = Path(v)
+        if path.suffix.lower() != ".json" or not path.stem.strip():
             print(f"Warning: {field_name} = {v} invalid, using {default}")
             return default
         return v
