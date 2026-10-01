@@ -92,7 +92,7 @@ class ScoreError(Exception):
         self._err_message = f"{Tc.red}[!]CaughtScoreError{Tc.clr}:\n"
 
         if self._err_type == "file_not_found":
-            self._err_message += (f"{Tc.ylw}File 'highscores.json' could not be found{Tc.clr}\n"
+            self._err_message += (f"{Tc.ylw}High score file could not be found{Tc.clr}\n"
                                   f"{Tc.red}[!]High score file will be created{Tc.clr}\n")
 
         if self._err_type == "dir_not_found":
