@@ -40,7 +40,7 @@ f8:
 package:
 	rm -rf build
 	rm -rf dist
-	pyinstaller --windowed --clean --name pacman src/__main__.py
+	uv run pyinstaller --windowed --clean --name pacman src/__main__.py
 	cp -r assets dist/pacman/
 	cp -r data dist/pacman/
 	cd dist && zip -r pacman.zip pacman/
