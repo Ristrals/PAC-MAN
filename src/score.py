@@ -20,7 +20,7 @@ class Score(BaseModel):
         score: Numeric score between zero and 99999.
     """
 
-    name: Annotated[str, Field(max_length=10, pattern=r"^[a-zA-Z0-9 ]+$", alias="name")]
+    name: Annotated[str, Field(max_length=10, min_length=3, pattern=r"^[a-zA-Z0-9 ]+$", alias="name")]
     score: Annotated[int, Field(ge=0, le=99999, alias="score")]
 
     @classmethod
@@ -52,7 +52,7 @@ class Score(BaseModel):
                         elif val_error_type == "string_pattern_mismatch":
                             data['name'] = re.sub(r"[^a-zA-Z0-9\s]", " ", data['name'])[:10]
                         else:
-                            data['name'] = "Player"
+                            data['name'] = "WrongName"
                     if "score" in val_error_loc:
                         if val_error_type == "less_than_equal":
                             data['score'] = 99999
